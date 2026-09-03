@@ -31,7 +31,10 @@ jobs:
         with:
           gradle-version: '8.4'
 
-      - name: Generate Mobile TVBox Project
+      # 步骤 1：生成工程配置、资源文件与布局（不含大段代码，支持变量注入）
+      - name: Setup Android Project Configuration
+        env:
+          RUN_NUM: ${{ github.run_number }}
         run: |
           mkdir -p app/src/main/java/com/mobile/tvbox
           mkdir -p app/src/main/res/values
@@ -40,7 +43,6 @@ jobs:
           mkdir -p app/src/main/res/menu
           mkdir -p app/src/main/res/xml
 
-          # 1. Gradle 基础配置
           cat << 'EOF' > gradle.properties
           android.useAndroidX=true
           android.nonTransitiveRClass=true
@@ -73,7 +75,7 @@ jobs:
           }
           EOF
 
-          # 动态注入基于 GitHub 构建序号的自动递增版本号 (永远递增)
+          # 动态注入自增版本号（使用 Shell 变量，不触发 Actions 长度限制）
           cat << EOF > app/build.gradle
           plugins {
               id 'com.android.application'
@@ -87,8 +89,8 @@ jobs:
                   applicationId "com.mobile.tvbox"
                   minSdk 24
                   targetSdk 34
-                  versionCode 1000 + ${{ github.run_number }}
-                  versionName "2.${{ github.run_number }}"
+                  versionCode $((1000 + RUN_NUM))
+                  versionName "2.${RUN_NUM}"
               }
 
               buildTypes {
@@ -402,7 +404,7 @@ jobs:
                           <SeekBar android:id="@+id/player_seek_bar" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:max="1000" android:progress="0"/>
                           <TextView android:id="@+id/btn_episodes_sheet" android:layout_width="40dp" android:layout_height="28dp" android:gravity="center" android:textColor="@color/white" android:textSize="11sp" android:text="选集" android:background="@drawable/bg_circle_btn"/>
                           <TextView android:id="@+id/btn_quality_switch" android:layout_width="44dp" android:layout_height="28dp" android:layout_marginStart="5dp" android:gravity="center" android:textColor="@color/white" android:textSize="10sp" android:textStyle="bold" android:text="1080P" android:background="@drawable/bg_circle_btn"/>
-                          <TextView android:id="@+id/btn_speed_switch" android:layout_width="40dp" android:layout_height="28dp" android:layout_marginStart="5dp" android:gravity="center" android:textColor="@color/white" android:textSize="11sp" android:textStyle="bold" android:text="1.0x" android:background="@drawable/bg_circle_btn"/>
+                          <TextView android:id="@+id/btn_speed_switch" android:layout_width="40dp" android:layout_height="28dp" android:layout_marginStart="5dp" android:gravity="center" android:textColor="@color/white" android:textSize="11sp" android:text="1.0x" android:background="@drawable/bg_circle_btn"/>
                           <TextView android:id="@+id/btn_fullscreen" android:layout_width="40dp" android:layout_height="28dp" android:layout_marginStart="5dp" android:gravity="center" android:textColor="@color/white" android:textSize="11sp" android:text="全屏" android:background="@drawable/bg_circle_btn"/>
                       </LinearLayout>
                   </RelativeLayout>
@@ -584,7 +586,9 @@ jobs:
           </manifest>
           EOF
 
-          # 8. Java 完整业务代码
+      # 步骤 2：生成主 Java 业务代码（纯文本写入，完全不含 Actions 变量，解除长度限制）
+      - name: Generate Java Source Code
+        run: |
           cat << 'EOF' > app/src/main/java/com/mobile/tvbox/MainActivity.java
           package com.mobile.tvbox;
 
@@ -812,8 +816,6 @@ jobs:
 
                   startPeriodicUiUpdates();
                   updateCacheDisplay();
-
-                  // 核心：启动时静默检查更新，有新版自动弹窗
                   checkInAppUpdate(false);
               }
 
@@ -1496,7 +1498,6 @@ jobs:
                       progressDialog.show();
                   }
 
-                  // 自动读取仓库中的版本信息
                   String checkUrl = "https://gh-proxy.org/raw.githubusercontent.com/yujingyang168-cpu/my-mobile-tvbox/main/version.json";
                   Request req = new Request.Builder().url(checkUrl).build();
 
@@ -2336,40 +2337,43 @@ jobs:
           }
           EOF
 
-      # 编译打包 Debug APK
+      # 步骤 3：编译打包 Debug APK
       - name: Build Debug APK
         run: gradle assembleDebug --no-daemon
 
-      # 核心自动化发布：自动在 GitHub 发布 Release 并附带 APK
+      # 步骤 4：自动发布 Release
       - name: Automatically Create Release & Publish APK
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_NUM: ${{ github.run_number }}
         run: |
-          TAG_NAME="v2.${{ github.run_number }}"
+          TAG_NAME="v2.${RUN_NUM}"
           APK_PATH="app/build/outputs/apk/debug/app-debug.apk"
           
-          # 创建 Release 并上传 APK
           gh release create "$TAG_NAME" "$APK_PATH" \
-            --title "影视盒子 V2.${{ github.run_number }}" \
-            --notes "代码提交自动构建版本 V2.${{ github.run_number }}，已同步至云端更新源。"
+            --title "影视盒子 V2.${RUN_NUM}" \
+            --notes "代码提交自动构建版本 V2.${RUN_NUM}，已同步至云端更新源。"
 
-      # 核心自动化版本号：自动生成 version.json 并提交回仓库
+      # 步骤 5：自动更新 version.json 并提交回仓库（数值计算规范化）
       - name: Auto-update version.json in Repository
+        env:
+          RUN_NUM: ${{ github.run_number }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           
-          DOWNLOAD_URL="https://gh-proxy.org/https://github.com/${{ github.repository }}/releases/download/v2.${{ github.run_number }}/app-debug.apk"
-          
+          DOWNLOAD_URL="https://gh-proxy.org/https://github.com/${{ github.repository }}/releases/download/v2.${RUN_NUM}/app-debug.apk"
+          V_CODE=$((1000 + RUN_NUM))
+
           cat << EOF > version.json
           {
-            "versionCode": 1000 + ${{ github.run_number }},
-            "versionName": "2.${{ github.run_number }}",
+            "versionCode": $V_CODE,
+            "versionName": "2.${RUN_NUM}",
             "apkUrl": "$DOWNLOAD_URL",
             "changelog": "1. 影视双层多维分类体系（动作/喜剧/恐怖等题材联动）\n2. 搜索输入实时联想与建议词\n3. 新增一键深度本地缓存清理"
           }
           EOF
 
           git add version.json
-          git commit -m "Auto update version.json to v2.${{ github.run_number }} [skip ci]" || true
+          git commit -m "Auto update version.json to v2.${RUN_NUM} [skip ci]" || true
           git push origin HEAD || true
