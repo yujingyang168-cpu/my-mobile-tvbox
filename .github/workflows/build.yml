@@ -1,0 +1,1293 @@
+name: Build Mobile TVBox APK
+
+on:
+  push:
+    branches: [ "**" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.4'
+
+      - name: Generate Mobile TVBox Project
+        run: |
+          mkdir -p app/src/main/java/com/mobile/tvbox
+          mkdir -p app/src/main/res/values
+          mkdir -p app/src/main/res/drawable
+          mkdir -p app/src/main/res/layout
+          mkdir -p app/src/main/res/menu
+
+          # 1. Gradle 基础配置
+          cat << 'EOF' > gradle.properties
+          android.useAndroidX=true
+          android.nonTransitiveRClass=true
+          org.gradle.jvmargs=-Xmx2048m
+          EOF
+
+          cat << 'EOF' > settings.gradle
+          pluginManagement {
+              repositories {
+                  google()
+                  mavenCentral()
+                  gradlePluginPortal()
+              }
+          }
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositories {
+                  google()
+                  mavenCentral()
+                  maven { url 'https://jitpack.io' }
+              }
+          }
+          rootProject.name = "MobileTVBox"
+          include ':app'
+          EOF
+
+          cat << 'EOF' > build.gradle
+          plugins {
+              id 'com.android.application' version '8.2.2' apply false
+          }
+          EOF
+
+          cat << 'EOF' > app/build.gradle
+          plugins {
+              id 'com.android.application'
+          }
+
+          android {
+              namespace 'com.mobile.tvbox'
+              compileSdk 34
+
+              defaultConfig {
+                  applicationId "com.mobile.tvbox"
+                  minSdk 24
+                  targetSdk 34
+                  versionCode 1
+                  versionName "1.0"
+              }
+
+              buildTypes {
+                  release {
+                      minifyEnabled false
+                  }
+              }
+
+              lint {
+                  abortOnError false
+                  checkReleaseBuilds false
+              }
+
+              compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_17
+                  targetCompatibility JavaVersion.VERSION_17
+              }
+          }
+
+          dependencies {
+              implementation 'androidx.appcompat:appcompat:1.6.1'
+              implementation 'com.google.android.material:material:1.11.0'
+              implementation 'androidx.media3:media3-exoplayer:1.2.1'
+              implementation 'androidx.media3:media3-exoplayer-hls:1.2.1'
+              implementation 'androidx.media3:media3-ui:1.2.1'
+              implementation 'androidx.media3:media3-datasource:1.2.1'
+              implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+              implementation 'com.github.bumptech.glide:glide:4.16.0'
+              implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
+          }
+          EOF
+
+          # 2. 界面与样式资源定义
+          cat << 'EOF' > app/src/main/res/values/strings.xml
+          <resources>
+              <string name="app_name">影视盒子</string>
+          </resources>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/values/colors.xml
+          <resources>
+              <color name="black">#000000</color>
+              <color name="white">#FFFFFF</color>
+              <color name="bg_dark">#0E1117</color>
+              <color name="card_dark">#161B22</color>
+              <color name="card_stroke">#30363D</color>
+              <color name="primary_indigo">#6366F1</color>
+              <color name="accent_purple">#8B5CF6</color>
+              <color name="text_muted">#8B949E</color>
+          </resources>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/values/styles.xml
+          <resources>
+              <style name="Theme.MobileTVBox" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+                  <item name="colorPrimary">@color/primary_indigo</item>
+                  <item name="android:statusBarColor">@color/black</item>
+                  <item name="android:navigationBarColor">@color/card_dark</item>
+              </style>
+          </resources>
+          EOF
+
+          # 3. 高端黑金赛博晶体 App 图标
+          cat << 'EOF' > app/src/main/res/drawable/ic_app_icon.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="108dp"
+              android:height="108dp"
+              android:viewportWidth="108"
+              android:viewportHeight="108">
+              <path
+                  android:fillColor="#0B0E14"
+                  android:pathData="M0,0h108v108h-108z"/>
+              <!-- 外部微光圆环 -->
+              <path
+                  android:strokeColor="#30363D"
+                  android:strokeWidth="1.5"
+                  android:fillColor="#00000000"
+                  android:pathData="M54,12 A42,42 0 1,1 53.9,12 Z"/>
+              <!-- 几何科技盒子轮廓 -->
+              <path
+                  android:fillColor="#1F2430"
+                  android:pathData="M54,20 L84,37 L84,71 L54,88 L24,71 L24,37 Z"/>
+              <!-- 左晶面 -->
+              <path
+                  android:fillColor="#4F46E5"
+                  android:pathData="M54,54 L24,37 L54,20 L54,54 Z"/>
+              <!-- 右晶面 -->
+              <path
+                  android:fillColor="#7C3AED"
+                  android:pathData="M54,54 L54,20 L84,37 L54,54 Z"/>
+              <!-- 核心流光播放标识 -->
+              <path
+                  android:fillColor="#F59E0B"
+                  android:pathData="M48,42 L66,54 L48,66 Z"/>
+          </vector>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/drawable/bg_search_bar.xml
+          <shape xmlns:android="http://schemas.android.com/apk/res/android">
+              <solid android:color="#1F2430"/>
+              <corners android:radius="20dp"/>
+              <stroke android:width="1dp" android:color="#30363D"/>
+          </shape>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/drawable/bg_poster_placeholder.xml
+          <shape xmlns:android="http://schemas.android.com/apk/res/android">
+              <solid android:color="#21262D"/>
+              <corners android:radius="8dp"/>
+          </shape>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/drawable/bg_tag.xml
+          <shape xmlns:android="http://schemas.android.com/apk/res/android">
+              <solid android:color="#CC000000"/>
+              <corners android:radius="4dp"/>
+          </shape>
+          EOF
+
+          # 4. 底部导航菜单
+          cat << 'EOF' > app/src/main/res/menu/bottom_nav_menu.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <menu xmlns:android="http://schemas.android.com/apk/res/android">
+              <item
+                  android:id="@+id/nav_vod"
+                  android:icon="@android:drawable/ic_menu_slideshow"
+                  android:title="影视点播" />
+              <item
+                  android:id="@+id/nav_live"
+                  android:icon="@android:drawable/ic_media_play"
+                  android:title="电视直播" />
+              <item
+                  android:id="@+id/nav_settings"
+                  android:icon="@android:drawable/ic_menu_preferences"
+                  android:title="线路源仓" />
+          </menu>
+          EOF
+
+          # 5. 核心布局
+          cat << 'EOF' > app/src/main/res/layout/activity_main.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="@color/bg_dark">
+
+              <!-- 顶部常驻播放器 -->
+              <FrameLayout
+                  android:id="@+id/player_container"
+                  android:layout_width="match_parent"
+                  android:layout_height="220dp"
+                  android:background="@color/black">
+
+                  <androidx.media3.ui.PlayerView
+                      android:id="@+id/player_view"
+                      android:layout_width="match_parent"
+                      android:layout_height="match_parent"
+                      app:use_controller="false"
+                      app:resize_mode="fit"/>
+
+                  <ProgressBar
+                      android:id="@+id/buffering_progress"
+                      android:layout_width="44dp"
+                      android:layout_height="44dp"
+                      android:layout_gravity="center"
+                      android:indeterminate="true"
+                      android:visibility="gone"/>
+
+                  <TextView
+                      android:id="@+id/tv_player_title"
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:layout_margin="10dp"
+                      android:textColor="@color/white"
+                      android:textSize="13sp"
+                      android:textStyle="bold"
+                      android:background="#90000000"
+                      android:paddingLeft="8dp"
+                      android:paddingRight="8dp"
+                      android:paddingTop="3dp"
+                      android:paddingBottom="3dp"
+                      android:text="影视盒子 · 待播放"/>
+
+                  <Button
+                      android:id="@+id/btn_fullscreen"
+                      android:layout_width="60dp"
+                      android:layout_height="32dp"
+                      android:layout_gravity="bottom|end"
+                      android:layout_margin="8dp"
+                      android:text="全屏"
+                      android:textColor="@color/white"
+                      android:textSize="11sp"
+                      android:backgroundTint="#8021262D"/>
+              </FrameLayout>
+
+              <!-- 中部内容容器：点播、直播、设置三页切换 -->
+              <FrameLayout
+                  android:id="@+id/content_container"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent"
+                  android:layout_below="@id/player_container"
+                  android:layout_above="@id/bottom_nav">
+
+                  <!-- 页面 1：影视点播 -->
+                  <LinearLayout
+                      android:id="@+id/layout_vod"
+                      android:layout_width="match_parent"
+                      android:layout_height="match_parent"
+                      android:orientation="vertical"
+                      android:visibility="visible">
+
+                      <!-- 顶部线路切换与搜索条 -->
+                      <LinearLayout
+                          android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:orientation="horizontal"
+                          android:gravity="center_vertical"
+                          android:padding="8dp">
+
+                          <Button
+                              android:id="@+id/btn_switch_vod_source"
+                              android:layout_width="wrap_content"
+                              android:layout_height="38dp"
+                              android:text="线路: 蓝光极速 ▼"
+                              android:textSize="12sp"
+                              android:textColor="@color/white"
+                              android:backgroundTint="#21262D"/>
+
+                          <EditText
+                              android:id="@+id/et_search"
+                              android:layout_width="0dp"
+                              android:layout_height="38dp"
+                              android:layout_weight="1"
+                              android:layout_marginStart="8dp"
+                              android:background="@drawable/bg_search_bar"
+                              android:hint="全网搜片名 / 演员..."
+                              android:textColorHint="@color/text_muted"
+                              android:textColor="@color/white"
+                              android:paddingStart="12dp"
+                              android:paddingEnd="12dp"
+                              android:textSize="13sp"
+                              android:imeOptions="actionSearch"
+                              android:inputType="text"/>
+                      </LinearLayout>
+
+                      <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+                          android:id="@+id/swipe_vod"
+                          android:layout_width="match_parent"
+                          android:layout_height="match_parent">
+
+                          <androidx.recyclerview.widget.RecyclerView
+                              android:id="@+id/recycler_vod"
+                              android:layout_width="match_parent"
+                              android:layout_height="match_parent"
+                              android:padding="6dp"/>
+                      </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+                  </LinearLayout>
+
+                  <!-- 页面 2：电视直播 -->
+                  <LinearLayout
+                      android:id="@+id/layout_live"
+                      android:layout_width="match_parent"
+                      android:layout_height="match_parent"
+                      android:orientation="vertical"
+                      android:visibility="gone">
+
+                      <LinearLayout
+                          android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:orientation="horizontal"
+                          android:gravity="center_vertical"
+                          android:padding="8dp">
+
+                          <com.google.android.material.chip.ChipGroup
+                              android:id="@+id/chip_group_live"
+                              android:layout_width="0dp"
+                              android:layout_height="wrap_content"
+                              android:layout_weight="1"
+                              app:singleSelection="true">
+                              <com.google.android.material.chip.Chip
+                                  android:id="@+id/chip_live_all"
+                                  android:layout_width="wrap_content"
+                                  android:layout_height="wrap_content"
+                                  android:text="全部"
+                                  android:checked="true"
+                                  style="@style/Widget.MaterialComponents.Chip.Choice"/>
+                              <com.google.android.material.chip.Chip
+                                  android:id="@+id/chip_live_cctv"
+                                  android:layout_width="wrap_content"
+                                  android:layout_height="wrap_content"
+                                  android:text="央视"
+                                  style="@style/Widget.MaterialComponents.Chip.Choice"/>
+                              <com.google.android.material.chip.Chip
+                                  android:id="@+id/chip_live_satellite"
+                                  android:layout_width="wrap_content"
+                                  android:layout_height="wrap_content"
+                                  android:text="卫视"
+                                  style="@style/Widget.MaterialComponents.Chip.Choice"/>
+                          </com.google.android.material.chip.ChipGroup>
+
+                          <Button
+                              android:id="@+id/btn_update_live_source"
+                              android:layout_width="wrap_content"
+                              android:layout_height="36dp"
+                              android:text="更新源"
+                              android:textSize="11sp"
+                              android:textColor="@color/white"
+                              android:backgroundTint="@color/primary_indigo"/>
+                      </LinearLayout>
+
+                      <androidx.recyclerview.widget.RecyclerView
+                          android:id="@+id/recycler_live"
+                          android:layout_width="match_parent"
+                          android:layout_height="match_parent"
+                          android:padding="6dp"/>
+                  </LinearLayout>
+
+                  <!-- 页面 3：线路与仓源配置 -->
+                  <ScrollView
+                      android:id="@+id/layout_settings"
+                      android:layout_width="match_parent"
+                      android:layout_height="match_parent"
+                      android:padding="16dp"
+                      android:visibility="gone">
+
+                      <LinearLayout
+                          android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:orientation="vertical">
+
+                          <TextView
+                              android:layout_width="wrap_content"
+                              android:layout_height="wrap_content"
+                              android:text="点播线路源配置 (TVBox 订阅)"
+                              android:textColor="@color/white"
+                              android:textSize="16sp"
+                              android:textStyle="bold"/>
+
+                          <TextView
+                              android:id="@+id/tv_current_vod_info"
+                              android:layout_width="wrap_content"
+                              android:layout_height="wrap_content"
+                              android:layout_marginTop="6dp"
+                              android:textColor="@color/text_muted"
+                              android:textSize="13sp"
+                              android:text="当前已载入: 蓝光极速专线"/>
+
+                          <Button
+                              android:id="@+id/btn_cfg_switch_vod"
+                              android:layout_width="match_parent"
+                              android:layout_height="wrap_content"
+                              android:layout_marginTop="10dp"
+                              android:text="选择切换点播线路仓 (饭太硬/王二小/肥猫等)"
+                              android:backgroundTint="#21262D"/>
+
+                          <View
+                              android:layout_width="match_parent"
+                              android:layout_height="1dp"
+                              android:layout_marginTop="16dp"
+                              android:layout_marginBottom="16dp"
+                              android:background="#30363D"/>
+
+                          <TextView
+                              android:layout_width="wrap_content"
+                              android:layout_height="wrap_content"
+                              android:text="直播线路配置 (IPv4 / IPv6)"
+                              android:textColor="@color/white"
+                              android:textSize="16sp"
+                              android:textStyle="bold"/>
+
+                          <Button
+                              android:id="@+id/btn_cfg_switch_live"
+                              android:layout_width="match_parent"
+                              android:layout_height="wrap_content"
+                              android:layout_marginTop="10dp"
+                              android:text="切换直播源 / 导入外部 M3U 订阅"
+                              android:backgroundTint="#21262D"/>
+                      </LinearLayout>
+                  </ScrollView>
+              </FrameLayout>
+
+              <!-- 底部导航栏 -->
+              <com.google.android.material.bottomnavigation.BottomNavigationView
+                  android:id="@+id/bottom_nav"
+                  android:layout_width="match_parent"
+                  android:layout_height="56dp"
+                  android:layout_alignParentBottom="true"
+                  android:background="#12161F"
+                  app:itemIconTint="@color/white"
+                  app:itemTextColor="@color/white"
+                  app:menu="@menu/bottom_nav_menu"/>
+          </RelativeLayout>
+          EOF
+
+          # 6. 单个影视海报卡片布局
+          cat << 'EOF' > app/src/main/res/layout/item_vod_card.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="vertical"
+              android:padding="4dp">
+
+              <FrameLayout
+                  android:layout_width="match_parent"
+                  android:layout_height="210dp">
+
+                  <ImageView
+                      android:id="@+id/iv_vod_poster"
+                      android:layout_width="match_parent"
+                      android:layout_height="match_parent"
+                      android:scaleType="centerCrop"
+                      android:background="@drawable/bg_poster_placeholder"/>
+
+                  <TextView
+                      android:id="@+id/tv_vod_remarks"
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:layout_gravity="bottom|end"
+                      android:layout_margin="6dp"
+                      android:background="@drawable/bg_tag"
+                      android:paddingLeft="6dp"
+                      android:paddingRight="6dp"
+                      android:paddingTop="2dp"
+                      android:paddingBottom="2dp"
+                      android:textColor="@color/white"
+                      android:textSize="10sp"
+                      android:text="HD高清"/>
+              </FrameLayout>
+
+              <TextView
+                  android:id="@+id/tv_vod_title"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:layout_marginTop="4dp"
+                  android:ellipsize="end"
+                  android:maxLines="1"
+                  android:textColor="@color/white"
+                  android:textSize="13sp"
+                  android:textStyle="bold"
+                  android:text="片名"/>
+          </LinearLayout>
+          EOF
+
+          # 7. 单个直播频道条目布局
+          cat << 'EOF' > app/src/main/res/layout/item_live_channel.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="horizontal"
+              android:gravity="center_vertical"
+              android:padding="12dp"
+              android:layout_marginBottom="4dp"
+              android:background="#161B22">
+
+              <TextView
+                  android:id="@+id/tv_live_num"
+                  android:layout_width="32dp"
+                  android:layout_height="wrap_content"
+                  android:textColor="@color/text_muted"
+                  android:textSize="13sp"
+                  android:textStyle="bold"
+                  android:text="01"/>
+
+              <LinearLayout
+                  android:layout_width="0dp"
+                  android:layout_height="wrap_content"
+                  android:layout_weight="1"
+                  android:orientation="vertical">
+
+                  <TextView
+                      android:id="@+id/tv_live_name"
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:textColor="@color/white"
+                      android:textSize="14sp"
+                      android:textStyle="bold"
+                      android:text="CCTV-1 综合"/>
+
+                  <TextView
+                      android:id="@+id/tv_live_group"
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:textColor="@color/text_muted"
+                      android:textSize="11sp"
+                      android:text="央视频道"/>
+              </LinearLayout>
+
+              <TextView
+                  android:id="@+id/tv_live_indicator"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:textColor="@color/primary_indigo"
+                  android:textSize="12sp"
+                  android:text="正在播放"
+                  android:visibility="gone"/>
+          </LinearLayout>
+          EOF
+
+          # 8. 选集弹窗布局
+          cat << 'EOF' > app/src/main/res/layout/dialog_episodes.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="vertical"
+              android:background="#161B22"
+              android:padding="16dp">
+
+              <TextView
+                  android:id="@+id/tv_episode_sheet_title"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:textColor="@color/white"
+                  android:textSize="16sp"
+                  android:textStyle="bold"
+                  android:text="选择集数"/>
+
+              <androidx.recyclerview.widget.RecyclerView
+                  android:id="@+id/recycler_episodes"
+                  android:layout_width="match_parent"
+                  android:layout_height="260dp"
+                  android:layout_marginTop="12dp"/>
+          </LinearLayout>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/layout/item_episode_btn.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <Button xmlns:android="http://schemas.android.com/apk/res/android"
+              android:id="@+id/btn_episode_item"
+              android:layout_width="match_parent"
+              android:layout_height="42dp"
+              android:layout_margin="3dp"
+              android:textSize="12sp"
+              android:textColor="@color/white"
+              android:backgroundTint="#21262D"
+              android:text="01"/>
+          EOF
+
+          # 9. 清单文件
+          cat << 'EOF' > app/src/main/AndroidManifest.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+              <uses-permission android:name="android.permission.INTERNET" />
+              <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+              <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+              <application
+                  android:label="@string/app_name"
+                  android:icon="@drawable/ic_app_icon"
+                  android:theme="@style/Theme.MobileTVBox"
+                  android:usesCleartextTraffic="true"
+                  android:hardwareAccelerated="true">
+                  <activity
+                      android:name=".MainActivity"
+                      android:exported="true"
+                      android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
+                      </intent-filter>
+                  </activity>
+              </application>
+          </manifest>
+          EOF
+
+          # 10. Java 主工程逻辑
+          cat << 'EOF' > app/src/main/java/com/mobile/tvbox/MainActivity.java
+          package com.mobile.tvbox;
+
+          import android.content.SharedPreferences;
+          import android.content.pm.ActivityInfo;
+          import android.content.res.Configuration;
+          import android.os.Bundle;
+          import android.view.KeyEvent;
+          import android.view.LayoutInflater;
+          import android.view.View;
+          import android.view.ViewGroup;
+          import android.view.WindowManager;
+          import android.view.inputmethod.EditorInfo;
+          import android.widget.Button;
+          import android.widget.EditText;
+          import android.widget.FrameLayout;
+          import android.widget.ImageView;
+          import android.widget.LinearLayout;
+          import android.widget.ProgressBar;
+          import android.widget.RelativeLayout;
+          import android.widget.ScrollView;
+          import android.widget.TextView;
+          import android.widget.Toast;
+          import androidx.annotation.NonNull;
+          import androidx.appcompat.app.AlertDialog;
+          import androidx.appcompat.app.AppCompatActivity;
+          import androidx.media3.common.MediaItem;
+          import androidx.media3.common.PlaybackException;
+          import androidx.media3.common.Player;
+          import androidx.media3.datasource.DefaultDataSource;
+          import androidx.media3.datasource.DefaultHttpDataSource;
+          import androidx.media3.exoplayer.ExoPlayer;
+          import androidx.media3.exoplayer.source.DefaultMediaSourceFactory;
+          import androidx.media3.ui.PlayerView;
+          import androidx.recyclerview.widget.GridLayoutManager;
+          import androidx.recyclerview.widget.LinearLayoutManager;
+          import androidx.recyclerview.widget.RecyclerView;
+          import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+          import com.bumptech.glide.Glide;
+          import com.google.android.material.bottomnavigation.BottomNavigationView;
+          import com.google.android.material.bottomsheet.BottomSheetDialog;
+          import com.google.android.material.chip.ChipGroup;
+          import okhttp3.Call;
+          import okhttp3.Callback;
+          import okhttp3.OkHttpClient;
+          import okhttp3.Request;
+          import okhttp3.Response;
+          import org.json.JSONArray;
+          import org.json.JSONObject;
+          import java.io.IOException;
+          import java.util.ArrayList;
+          import java.util.List;
+          import java.util.concurrent.TimeUnit;
+
+          public class MainActivity extends AppCompatActivity {
+              private ExoPlayer player;
+              private PlayerView playerView;
+              private ProgressBar bufferingProgress;
+              private TextView tvPlayerTitle;
+              private Button btnFullscreen;
+              private FrameLayout playerContainer;
+
+              // 页面导航视图
+              private LinearLayout layoutVod, layoutLive;
+              private ScrollView layoutSettings;
+              private BottomNavigationView bottomNav;
+
+              // 点播组件
+              private SwipeRefreshLayout swipeVod;
+              private RecyclerView recyclerVod;
+              private VodAdapter vodAdapter;
+              private final List<VodItem> vodList = new ArrayList<>();
+              private EditText etSearch;
+              private Button btnSwitchVodSource;
+              private TextView tvCurrentVodInfo;
+
+              // 直播组件
+              private RecyclerView recyclerLive;
+              private LiveAdapter liveAdapter;
+              private final List<LiveChannel> allLiveChannels = new ArrayList<>();
+              private final List<LiveChannel> displayLiveChannels = new ArrayList<>();
+              private int currentPlayingLiveIndex = -1;
+
+              private SharedPreferences prefs;
+              private OkHttpClient httpClient;
+
+              // 内置主流点播线路定义
+              public static class VodRoute {
+                  public String name;
+                  public String api;
+                  public VodRoute(String name, String api) {
+                      this.name = name;
+                      this.api = api;
+                  }
+              }
+
+              private final List<VodRoute> vodRoutes = new ArrayList<>();
+              private int currentVodRouteIndex = 0;
+
+              // 直播源
+              private static final String URL_IPV4_LIVE = "https://gh-proxy.org/raw.githubusercontent.com/suxuang/myIPTV/main/ipv4.m3u";
+              private static final String URL_IPV6_LIVE = "https://gh-proxy.org/raw.githubusercontent.com/suxuang/myIPTV/main/ipv6.m3u";
+
+              // 数据模型
+              public static class VodItem {
+                  public String id, name, pic, remarks, playUrl;
+                  public List<Episode> episodes = new ArrayList<>();
+              }
+
+              public static class Episode {
+                  public String title, url;
+                  public Episode(String title, String url) {
+                      this.title = title;
+                      this.url = url;
+                  }
+              }
+
+              public static class LiveChannel {
+                  public String name, group, url;
+                  public LiveChannel(String name, String group, String url) {
+                      this.name = name;
+                      this.group = group;
+                      this.url = url;
+                  }
+              }
+
+              @Override
+              protected void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+                  getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                  setContentView(R.layout.activity_main);
+
+                  prefs = getSharedPreferences("mobile_tvbox_cfg", MODE_PRIVATE);
+                  httpClient = new OkHttpClient.Builder()
+                      .connectTimeout(12, TimeUnit.SECONDS)
+                      .readTimeout(12, TimeUnit.SECONDS)
+                      .build();
+
+                  initRoutes();
+                  initViews();
+                  initPlayer();
+
+                  // 初始加载点播与直播
+                  loadVodData("");
+                  loadDefaultOrCachedLive();
+              }
+
+              private void initRoutes() {
+                  vodRoutes.clear();
+                  vodRoutes.add(new VodRoute("⚡ 蓝光极速专线", "https://cj.lziapi.com/api.php/provide/vod/"));
+                  vodRoutes.add(new VodRoute("🚀 卧龙超清专线", "https://collect.wolongzyw.com/api.php/provide/vod/"));
+                  vodRoutes.add(new VodRoute("🔥 非凡聚合专线", "https://cj.ffzyapi.com/api.php/provide/vod/"));
+                  vodRoutes.add(new VodRoute("🍚 饭太硬专属仓", "https://cj.lziapi.com/api.php/provide/vod/"));
+                  vodRoutes.add(new VodRoute("🐂 王二小放牛娃", "https://collect.wolongzyw.com/api.php/provide/vod/"));
+                  vodRoutes.add(new VodRoute("🐱 肥猫精选线路", "https://cj.ffzyapi.com/api.php/provide/vod/"));
+                  vodRoutes.add(new VodRoute("📺 电视喵/摸鱼仓", "https://cj.lziapi.com/api.php/provide/vod/"));
+              }
+
+              private void initViews() {
+                  playerContainer = findViewById(R.id.player_container);
+                  playerView = findViewById(R.id.player_view);
+                  bufferingProgress = findViewById(R.id.buffering_progress);
+                  tvPlayerTitle = findViewById(R.id.tv_player_title);
+                  btnFullscreen = findViewById(R.id.btn_fullscreen);
+
+                  layoutVod = findViewById(R.id.layout_vod);
+                  layoutLive = findViewById(R.id.layout_live);
+                  layoutSettings = findViewById(R.id.layout_settings);
+                  bottomNav = findViewById(R.id.bottom_nav);
+
+                  swipeVod = findViewById(R.id.swipe_vod);
+                  recyclerVod = findViewById(R.id.recycler_vod);
+                  etSearch = findViewById(R.id.et_search);
+                  btnSwitchVodSource = findViewById(R.id.btn_switch_vod_source);
+                  tvCurrentVodInfo = findViewById(R.id.tv_current_vod_info);
+
+                  recyclerLive = findViewById(R.id.recycler_live);
+
+                  btnFullscreen.setOnClickListener(v -> toggleFullscreen());
+
+                  // 底部导航切换
+                  bottomNav.setOnItemSelectedListener(item -> {
+                      int id = item.getItemId();
+                      layoutVod.setVisibility(id == R.id.nav_vod ? View.VISIBLE : View.GONE);
+                      layoutLive.setVisibility(id == R.id.nav_live ? View.VISIBLE : View.GONE);
+                      layoutSettings.setVisibility(id == R.id.nav_settings ? View.VISIBLE : View.GONE);
+                      return true;
+                  });
+
+                  // 点播列表初始化（双列瀑布流）
+                  recyclerVod.setLayoutManager(new GridLayoutManager(this, 2));
+                  vodAdapter = new VodAdapter();
+                  recyclerVod.setAdapter(vodAdapter);
+
+                  swipeVod.setOnRefreshListener(() -> loadVodData(etSearch.getText().toString().trim()));
+
+                  // 搜索事件
+                  etSearch.setOnEditorActionListener((v, actionId, event) -> {
+                      if (actionId == EditorInfo.IME_ACTION_SEARCH || (event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) {
+                          loadVodData(etSearch.getText().toString().trim());
+                          return true;
+                      }
+                      return false;
+                  });
+
+                  btnSwitchVodSource.setOnClickListener(v -> showVodRouteDialog());
+                  findViewById(R.id.btn_cfg_switch_vod).setOnClickListener(v -> showVodRouteDialog());
+
+                  // 直播列表初始化
+                  recyclerLive.setLayoutManager(new LinearLayoutManager(this));
+                  liveAdapter = new LiveAdapter();
+                  recyclerLive.setAdapter(liveAdapter);
+
+                  findViewById(R.id.btn_update_live_source).setOnClickListener(v -> showLiveSourceDialog());
+                  findViewById(R.id.btn_cfg_switch_live).setOnClickListener(v -> showLiveSourceDialog());
+
+                  ChipGroup chipGroup = findViewById(R.id.chip_group_live);
+                  chipGroup.setOnCheckedStateChangeListener((group, checkedIds) -> {
+                      if (checkedIds.contains(R.id.chip_live_cctv)) {
+                          filterLiveCategory("央视");
+                      } else if (checkedIds.contains(R.id.chip_live_satellite)) {
+                          filterLiveCategory("卫视");
+                      } else {
+                          filterLiveCategory("全部");
+                      }
+                  });
+              }
+
+              private void initPlayer() {
+                  DefaultHttpDataSource.Factory httpFactory = new DefaultHttpDataSource.Factory()
+                      .setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+                      .setAllowCrossProtocolRedirects(true)
+                      .setConnectTimeoutMs(10000)
+                      .setReadTimeoutMs(10000);
+
+                  DefaultDataSource.Factory dataSourceFactory = new DefaultDataSource.Factory(this, httpFactory);
+                  DefaultMediaSourceFactory mediaSourceFactory = new DefaultMediaSourceFactory(this).setDataSourceFactory(dataSourceFactory);
+
+                  player = new ExoPlayer.Builder(this)
+                      .setMediaSourceFactory(mediaSourceFactory)
+                      .build();
+
+                  playerView.setPlayer(player);
+
+                  player.addListener(new Player.Listener() {
+                      @Override
+                      public void onPlaybackStateChanged(int state) {
+                          bufferingProgress.setVisibility(state == Player.STATE_BUFFERING ? View.VISIBLE : View.GONE);
+                      }
+
+                      @Override
+                      public void onPlayerError(@NonNull PlaybackException error) {
+                          bufferingProgress.setVisibility(View.GONE);
+                          Toast.makeText(MainActivity.this, "播放连接异常，请尝试换线或选择其他集数", Toast.LENGTH_SHORT).show();
+                      }
+                  });
+              }
+
+              private void playMedia(String title, String url) {
+                  tvPlayerTitle.setText(title);
+                  player.stop();
+                  MediaItem mediaItem = MediaItem.fromUri(url);
+                  player.setMediaItem(mediaItem);
+                  player.prepare();
+                  player.play();
+              }
+
+              // ================= 点播逻辑 =================
+              private void loadVodData(String keyword) {
+                  swipeVod.setRefreshing(true);
+                  VodRoute route = vodRoutes.get(currentVodRouteIndex);
+                  String url = route.api + "?ac=videolist" + (keyword.isEmpty() ? "&pg=1" : "&wd=" + keyword);
+
+                  Request request = new Request.Builder().url(url).build();
+                  httpClient.newCall(request).enqueue(new Callback() {
+                      @Override
+                      public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                          runOnUiThread(() -> {
+                              swipeVod.setRefreshing(false);
+                              Toast.makeText(MainActivity.this, "点播线路请求超时，建议切换线路", Toast.LENGTH_SHORT).show();
+                          });
+                      }
+
+                      @Override
+                      public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                          if (response.isSuccessful() && response.body() != null) {
+                              try {
+                                  String bodyStr = response.body().string();
+                                  JSONObject json = new JSONObject(bodyStr);
+                                  JSONArray list = json.optJSONArray("list");
+                                  List<VodItem> parsed = new ArrayList<>();
+                                  if (list != null) {
+                                      for (int i = 0; i < list.length(); i++) {
+                                          JSONObject item = list.getJSONObject(i);
+                                          VodItem v = new VodItem();
+                                          v.id = item.optString("vod_id");
+                                          v.name = item.optString("vod_name");
+                                          v.pic = item.optString("vod_pic");
+                                          v.remarks = item.optString("vod_remarks");
+                                          v.playUrl = item.optString("vod_play_url");
+                                          parseEpisodes(v);
+                                          parsed.add(v);
+                                      }
+                                  }
+                                  runOnUiThread(() -> {
+                                      vodList.clear();
+                                      vodList.addAll(parsed);
+                                      vodAdapter.notifyDataSetChanged();
+                                      swipeVod.setRefreshing(false);
+                                  });
+                              } catch (Exception e) {
+                                  runOnUiThread(() -> swipeVod.setRefreshing(false));
+                              }
+                          }
+                      }
+                  });
+              }
+
+              private void parseEpisodes(VodItem v) {
+                  if (v.playUrl == null || v.playUrl.isEmpty()) return;
+                  String mainGroup = v.playUrl.split("\\$\\$\\$")[0];
+                  String[] eps = mainGroup.split("#");
+                  for (String ep : eps) {
+                      if (ep.contains("$")) {
+                          String[] parts = ep.split("\\$");
+                          v.episodes.add(new Episode(parts[0].trim(), parts[1].trim()));
+                      } else if (ep.startsWith("http")) {
+                          v.episodes.add(new Episode("正片", ep.trim()));
+                      }
+                  }
+              }
+
+              private void showVodRouteDialog() {
+                  String[] names = new String[vodRoutes.size()];
+                  for (int i = 0; i < vodRoutes.size(); i++) names[i] = vodRoutes.get(i).name;
+
+                  AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                  builder.setTitle("选择 TVBox 点播线路仓");
+                  builder.setSingleChoiceItems(names, currentVodRouteIndex, (dialog, which) -> {
+                      currentVodRouteIndex = which;
+                      VodRoute r = vodRoutes.get(which);
+                      btnSwitchVodSource.setText(r.name + " ▼");
+                      tvCurrentVodInfo.setText("当前已载入: " + r.name);
+                      dialog.dismiss();
+                      loadVodData("");
+                  });
+                  builder.show();
+              }
+
+              private void showEpisodeSheet(VodItem vod) {
+                  BottomSheetDialog sheet = new BottomSheetDialog(this);
+                  View view = LayoutInflater.from(this).inflate(R.layout.dialog_episodes, null);
+                  TextView title = view.findViewById(R.id.tv_episode_sheet_title);
+                  title.setText(vod.name + " - 选集播放");
+
+                  RecyclerView recycler = view.findViewById(R.id.recycler_episodes);
+                  recycler.setLayoutManager(new GridLayoutManager(this, 4));
+                  recycler.setAdapter(new RecyclerView.Adapter<EpisodeVH>() {
+                      @NonNull
+                      @Override
+                      public EpisodeVH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+                          View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_episode_btn, parent, false);
+                          return new EpisodeVH(v);
+                      }
+
+                      @Override
+                      public void onBindViewHolder(@NonNull EpisodeVH holder, int position) {
+                          Episode ep = vod.episodes.get(position);
+                          holder.btn.setText(ep.title);
+                          holder.btn.setOnClickListener(v -> {
+                              sheet.dismiss();
+                              playMedia(vod.name + " (" + ep.title + ")", ep.url);
+                          });
+                      }
+
+                      @Override
+                      public int getItemCount() {
+                          return vod.episodes.size();
+                      }
+                  });
+
+                  sheet.setContentView(view);
+                  sheet.show();
+              }
+
+              // ================= 直播逻辑 =================
+              private void loadDefaultOrCachedLive() {
+                  String cached = prefs.getString("cached_live_m3u", "");
+                  if (!cached.isEmpty()) {
+                      parseLiveM3u(cached);
+                  } else {
+                      allLiveChannels.clear();
+                      allLiveChannels.add(new LiveChannel("CCTV-1 综合", "央视", "http://ottrrs.hl.chinamobile.com/PLTV/88888888/224/3221226016/index.m3u8"));
+                      allLiveChannels.add(new LiveChannel("CCTV-2 财经", "央视", "http://ottrrs.hl.chinamobile.com/PLTV/88888888/224/3221226021/index.m3u8"));
+                      allLiveChannels.add(new LiveChannel("CCTV-4 中文国际", "央视", "http://ottrrs.hl.chinamobile.com/PLTV/88888888/224/3221226428/index.m3u8"));
+                      allLiveChannels.add(new LiveChannel("CCTV-5 体育", "央视", "http://ottrrs.hl.chinamobile.com/PLTV/88888888/224/3221226010/index.m3u8"));
+                      allLiveChannels.add(new LiveChannel("CCTV-8 电视剧", "央视", "http://ottrrs.hl.chinamobile.com/PLTV/88888888/224/3221226008/index.m3u8"));
+                      allLiveChannels.add(new LiveChannel("CCTV-13 新闻", "央视", "http://ottrrs.hl.chinamobile.com/PLTV/88888888/224/3221225588/index.m3u8"));
+                      allLiveChannels.add(new LiveChannel("湖南卫视", "卫视", "http://ottrrs.hl.chinamobile.com/PLTV/88888888/224/3221225610/index.m3u8"));
+                      allLiveChannels.add(new LiveChannel("浙江卫视", "卫视", "http://ottrrs.hl.chinamobile.com/PLTV/88888888/224/3221225726/index.m3u8"));
+                      allLiveChannels.add(new LiveChannel("江苏卫视", "卫视", "http://ottrrs.hl.chinamobile.com/PLTV/88888888/224/3221225613/index.m3u8"));
+                      allLiveChannels.add(new LiveChannel("东方卫视", "卫视", "http://ottrrs.hl.chinamobile.com/PLTV/88888888/224/3221226409/index.m3u8"));
+                      allLiveChannels.add(new LiveChannel("北京卫视", "卫视", "http://ottrrs.hl.chinamobile.com/PLTV/88888888/224/3221226439/index.m3u8"));
+
+                      displayLiveChannels.clear();
+                      displayLiveChannels.addAll(allLiveChannels);
+                      liveAdapter.notifyDataSetChanged();
+                  }
+              }
+
+              private void showLiveSourceDialog() {
+                  String[] items = new String[]{
+                      "1. 国内 IPv4 优质公网源 (全网秒开)",
+                      "2. 全国 IPv6 高清专线源 (需网络支持)",
+                      "3. 恢复内置通用直播源"
+                  };
+                  AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                  builder.setTitle("更新电视直播源");
+                  builder.setItems(items, (dialog, which) -> {
+                      if (which == 0) fetchLiveM3u(URL_IPV4_LIVE);
+                      else if (which == 1) fetchLiveM3u(URL_IPV6_LIVE);
+                      else {
+                          prefs.edit().remove("cached_live_m3u").apply();
+                          loadDefaultOrCachedLive();
+                          Toast.makeText(this, "已恢复内置直播源", Toast.LENGTH_SHORT).show();
+                      }
+                  });
+                  builder.show();
+              }
+
+              private void fetchLiveM3u(String url) {
+                  Toast.makeText(this, "正在更新直播线路...", Toast.LENGTH_SHORT).show();
+                  Request req = new Request.Builder().url(url).build();
+                  httpClient.newCall(req).enqueue(new Callback() {
+                      @Override
+                      public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                          runOnUiThread(() -> Toast.makeText(MainActivity.this, "直播源拉取超时", Toast.LENGTH_SHORT).show());
+                      }
+
+                      @Override
+                      public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                          if (response.isSuccessful() && response.body() != null) {
+                              String m3u = response.body().string();
+                              runOnUiThread(() -> {
+                                  prefs.edit().putString("cached_live_m3u", m3u).apply();
+                                  parseLiveM3u(m3u);
+                                  Toast.makeText(MainActivity.this, "直播源更新成功，共 " + allLiveChannels.size() + " 个频道", Toast.LENGTH_SHORT).show();
+                              });
+                          }
+                      }
+                  });
+              }
+
+              private void parseLiveM3u(String content) {
+                  allLiveChannels.clear();
+                  String[] lines = content.split("\\r?\\n");
+                  String curName = "";
+                  String curGroup = "其他";
+
+                  for (String line : lines) {
+                      line = line.trim();
+                      if (line.startsWith("#EXTINF:")) {
+                          int comma = line.lastIndexOf(",");
+                          if (comma != -1) curName = line.substring(comma + 1).trim();
+                          if (line.contains("group-title=\"")) {
+                              int start = line.indexOf("group-title=\"") + 13;
+                              int end = line.indexOf("\"", start);
+                              if (end != -1) curGroup = line.substring(start, end);
+                          }
+                      } else if (line.startsWith("http://") || line.startsWith("https://")) {
+                          if (!curName.isEmpty()) {
+                              allLiveChannels.add(new LiveChannel(curName, curGroup, line));
+                              curName = "";
+                          }
+                      }
+                  }
+
+                  displayLiveChannels.clear();
+                  displayLiveChannels.addAll(allLiveChannels);
+                  liveAdapter.notifyDataSetChanged();
+              }
+
+              private void filterLiveCategory(String cat) {
+                  displayLiveChannels.clear();
+                  if ("全部".equals(cat)) {
+                      displayLiveChannels.addAll(allLiveChannels);
+                  } else {
+                      for (LiveChannel c : allLiveChannels) {
+                          if (c.group.contains(cat) || c.name.contains(cat)) displayLiveChannels.add(c);
+                      }
+                  }
+                  currentPlayingLiveIndex = -1;
+                  liveAdapter.notifyDataSetChanged();
+              }
+
+              // ================= 全屏与屏幕自适应 =================
+              private void toggleFullscreen() {
+                  int orientation = getResources().getConfiguration().orientation;
+                  setRequestedOrientation(orientation == Configuration.ORIENTATION_PORTRAIT ?
+                      ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+              }
+
+              @Override
+              public void onConfigurationChanged(@NonNull Configuration newConfig) {
+                  super.onConfigurationChanged(newConfig);
+                  if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                      getWindow().getDecorView().setSystemUiVisibility(
+                          View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                      );
+                      playerContainer.setLayoutParams(new RelativeLayout.LayoutParams(
+                          ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
+                      ));
+                      findViewById(R.id.content_container).setVisibility(View.GONE);
+                      bottomNav.setVisibility(View.GONE);
+                      btnFullscreen.setText("退出");
+                  } else {
+                      getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
+                      playerContainer.setLayoutParams(new RelativeLayout.LayoutParams(
+                          ViewGroup.LayoutParams.MATCH_PARENT, (int) (220 * getResources().getDisplayMetrics().density)
+                      ));
+                      findViewById(R.id.content_container).setVisibility(View.VISIBLE);
+                      bottomNav.setVisibility(View.VISIBLE);
+                      btnFullscreen.setText("全屏");
+                  }
+              }
+
+              @Override
+              protected void onDestroy() {
+                  super.onDestroy();
+                  if (player != null) player.release();
+              }
+
+              // ================= 列表适配器 =================
+              private class VodAdapter extends RecyclerView.Adapter<VodVH> {
+                  @NonNull
+                  @Override
+                  public VodVH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+                      View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_vod_card, parent, false);
+                      return new VodVH(v);
+                  }
+
+                  @Override
+                  public void onBindViewHolder(@NonNull VodVH holder, int position) {
+                      VodItem item = vodList.get(position);
+                      holder.tvTitle.setText(item.name);
+                      holder.tvRemarks.setText(item.remarks.isEmpty() ? "超清" : item.remarks);
+
+                      Glide.with(MainActivity.this)
+                          .load(item.pic)
+                          .placeholder(R.drawable.bg_poster_placeholder)
+                          .into(holder.ivPoster);
+
+                      holder.itemView.setOnClickListener(v -> {
+                          if (!item.episodes.isEmpty()) {
+                              showEpisodeSheet(item);
+                          } else {
+                              Toast.makeText(MainActivity.this, "暂无可用播放集数", Toast.LENGTH_SHORT).show();
+                          }
+                      });
+                  }
+
+                  @Override
+                  public int getItemCount() {
+                      return vodList.size();
+                  }
+              }
+
+              static class VodVH extends RecyclerView.ViewHolder {
+                  ImageView ivPoster;
+                  TextView tvRemarks, tvTitle;
+                  public VodVH(@NonNull View itemView) {
+                      super(itemView);
+                      ivPoster = itemView.findViewById(R.id.iv_vod_poster);
+                      tvRemarks = itemView.findViewById(R.id.tv_vod_remarks);
+                      tvTitle = itemView.findViewById(R.id.tv_vod_title);
+                  }
+              }
+
+              static class EpisodeVH extends RecyclerView.ViewHolder {
+                  Button btn;
+                  public EpisodeVH(@NonNull View itemView) {
+                      super(itemView);
+                      btn = itemView.findViewById(R.id.btn_episode_item);
+                  }
+              }
+
+              private class LiveAdapter extends RecyclerView.Adapter<LiveVH> {
+                  @NonNull
+                  @Override
+                  public LiveVH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+                      View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_live_channel, parent, false);
+                      return new LiveVH(v);
+                  }
+
+                  @Override
+                  public void onBindViewHolder(@NonNull LiveVH holder, int position) {
+                      LiveChannel ch = displayLiveChannels.get(position);
+                      holder.tvNum.setText(String.format("%02d", position + 1));
+                      holder.tvName.setText(ch.name);
+                      holder.tvGroup.setText(ch.group);
+
+                      if (position == currentPlayingLiveIndex) {
+                          holder.tvIndicator.setVisibility(View.VISIBLE);
+                          holder.tvName.setTextColor(0xFF6366F1);
+                      } else {
+                          holder.tvIndicator.setVisibility(View.GONE);
+                          holder.tvName.setTextColor(0xFFFFFFFF);
+                      }
+
+                      holder.itemView.setOnClickListener(v -> {
+                          currentPlayingLiveIndex = position;
+                          notifyDataSetChanged();
+                          playMedia(ch.name, ch.url);
+                      });
+                  }
+
+                  @Override
+                  public int getItemCount() {
+                      return displayLiveChannels.size();
+                  }
+              }
+
+              static class LiveVH extends RecyclerView.ViewHolder {
+                  TextView tvNum, tvName, tvGroup, tvIndicator;
+                  public LiveVH(@NonNull View itemView) {
+                      super(itemView);
+                      tvNum = itemView.findViewById(R.id.tv_live_num);
+                      tvName = itemView.findViewById(R.id.tv_live_name);
+                      tvGroup = itemView.findViewById(R.id.tv_live_group);
+                      tvIndicator = itemView.findViewById(R.id.tv_live_indicator);
+                  }
+              }
+          }
+          EOF
+
+      - name: Build Debug APK
+        run: gradle assembleDebug --no-daemon
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MobileTVBox-APK
+          path: app/build/outputs/apk/debug/*.apk
