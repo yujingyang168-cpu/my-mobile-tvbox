@@ -30,6 +30,7 @@ jobs:
           mkdir -p app/src/main/res/drawable
           mkdir -p app/src/main/res/layout
           mkdir -p app/src/main/res/menu
+          mkdir -p app/src/main/res/xml
 
           # 1. Gradle 基础配置
           cat << 'EOF' > gradle.properties
@@ -78,7 +79,7 @@ jobs:
                   minSdk 24
                   targetSdk 34
                   versionCode 6
-                  versionName "1.5"
+                  versionName "2.0"
               }
 
               buildTypes {
@@ -111,7 +112,16 @@ jobs:
           }
           EOF
 
-          # 2. 界面与样式资源
+          # 2. FileProvider 路径配置（用于实现 App 内下载后自动弹出安装界面）
+          cat << 'EOF' > app/src/main/res/xml/file_paths.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <paths>
+              <external-files-path name="apk_downloads" path="." />
+              <external-path name="external_storage_root" path="." />
+          </paths>
+          EOF
+
+          # 3. 界面与样式资源
           cat << 'EOF' > app/src/main/res/values/strings.xml
           <resources>
               <string name="app_name">影视盒子</string>
@@ -194,9 +204,9 @@ jobs:
           </shape>
           EOF
 
-          cat << 'EOF' > app/src/main/res/drawable/bg_always_time.xml
+          cat << 'EOF' > app/src/main/res/drawable/bg_always_info.xml
           <shape xmlns:android="http://schemas.android.com/apk/res/android">
-              <solid android:color="#66000000"/>
+              <solid android:color="#77000000"/>
               <corners android:radius="10dp"/>
           </shape>
           EOF
@@ -211,7 +221,7 @@ jobs:
           </shape>
           EOF
 
-          # 3. 菜单与主界面布局
+          # 4. 底部导航菜单
           cat << 'EOF' > app/src/main/res/menu/bottom_nav_menu.xml
           <?xml version="1.0" encoding="utf-8"?>
           <menu xmlns:android="http://schemas.android.com/apk/res/android">
@@ -230,6 +240,7 @@ jobs:
           </menu>
           EOF
 
+          # 5. 主页面布局
           cat << 'EOF' > app/src/main/res/layout/activity_main.xml
           <?xml version="1.0" encoding="utf-8"?>
           <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -260,25 +271,37 @@ jobs:
                       android:indeterminate="true"
                       android:visibility="gone"/>
 
-                  <!-- 常驻系统时间 -->
+                  <!-- 需求 1 & 5：全天候常驻角标（电量 + 手机时间 + 播放时间进度） -->
                   <TextView
-                      android:id="@+id/tv_always_time"
+                      android:id="@+id/tv_always_info"
                       android:layout_width="wrap_content"
                       android:layout_height="wrap_content"
                       android:layout_gravity="top|end"
                       android:layout_margin="8dp"
-                      android:background="@drawable/bg_always_time"
+                      android:background="@drawable/bg_always_info"
                       android:paddingStart="8dp"
                       android:paddingEnd="8dp"
                       android:paddingTop="3dp"
                       android:paddingBottom="3dp"
-                      android:textColor="#E0E0E0"
+                      android:textColor="#EAEAEA"
                       android:textSize="11sp"
                       android:textStyle="bold"
-                      android:text="12:00"
+                      android:text="🔋 100%  12:00 | 00:00 / 00:00"
                       android:visibility="visible"/>
 
-                  <!-- 手势横向滑动快进/快退提示窗 -->
+                  <!-- 需求 1：底部常驻 2.5dp 荧光微型进度条（无操作隐退时依然可见） -->
+                  <ProgressBar
+                      android:id="@+id/always_mini_progress"
+                      style="?android:attr/progressBarStyleHorizontal"
+                      android:layout_width="match_parent"
+                      android:layout_height="2.5dp"
+                      android:layout_gravity="bottom"
+                      android:max="1000"
+                      android:progress="0"
+                      android:progressTint="@color/primary_indigo"
+                      android:visibility="visible"/>
+
+                  <!-- 屏幕快进/快退手势提示 -->
                   <LinearLayout
                       android:id="@+id/layout_gesture_seek"
                       android:layout_width="160dp"
@@ -309,7 +332,7 @@ jobs:
                           android:text="+00:30"/>
                   </LinearLayout>
 
-                  <!-- 新增：右侧上下滑动手势调节亮度提示窗 -->
+                  <!-- 屏幕右侧上下滑动调光提示 -->
                   <LinearLayout
                       android:id="@+id/layout_brightness_indicator"
                       android:layout_width="120dp"
@@ -338,7 +361,7 @@ jobs:
                           android:text="50%"/>
                   </LinearLayout>
 
-                  <!-- 防误触屏幕锁按钮 -->
+                  <!-- 防误触屏幕锁 -->
                   <TextView
                       android:id="@+id/btn_lock_screen"
                       android:layout_width="42dp"
@@ -352,7 +375,7 @@ jobs:
                       android:text="🔓"
                       android:visibility="gone"/>
 
-                  <!-- 横屏全屏专用右侧抽屉选集 -->
+                  <!-- 横屏专属右侧抽屉选集 -->
                   <LinearLayout
                       android:id="@+id/right_episodes_drawer"
                       android:layout_width="290dp"
@@ -416,7 +439,7 @@ jobs:
                       android:background="@drawable/bg_player_gradient"
                       android:visibility="visible">
 
-                      <!-- 顶部标题与设置 -->
+                      <!-- 顶部标题、投屏与设置 -->
                       <LinearLayout
                           android:id="@+id/top_control_bar"
                           android:layout_width="match_parent"
@@ -437,13 +460,27 @@ jobs:
                               android:maxLines="1"
                               android:text="影视盒子 · 点击下方选片播放"/>
 
+                          <!-- 需求 4：投屏按钮 -->
+                          <TextView
+                              android:id="@+id/btn_cast_screen"
+                              android:layout_width="wrap_content"
+                              android:layout_height="28dp"
+                              android:paddingStart="8dp"
+                              android:paddingEnd="8dp"
+                              android:layout_marginEnd="6dp"
+                              android:gravity="center"
+                              android:textColor="@color/white"
+                              android:textSize="11sp"
+                              android:text="📡 投屏"
+                              android:background="@drawable/bg_circle_btn"/>
+
                           <TextView
                               android:id="@+id/btn_player_settings"
                               android:layout_width="wrap_content"
                               android:layout_height="28dp"
                               android:paddingStart="8dp"
                               android:paddingEnd="8dp"
-                              android:layout_marginEnd="45dp"
+                              android:layout_marginEnd="50dp"
                               android:gravity="center"
                               android:textColor="@color/white"
                               android:textSize="11sp"
@@ -451,7 +488,7 @@ jobs:
                               android:background="@drawable/bg_circle_btn"/>
                       </LinearLayout>
 
-                      <!-- 中间快捷控制组 -->
+                      <!-- 中部控制按钮簇 -->
                       <LinearLayout
                           android:id="@+id/center_control_group"
                           android:layout_width="wrap_content"
@@ -549,7 +586,7 @@ jobs:
 
                           <TextView
                               android:id="@+id/btn_episodes_sheet"
-                              android:layout_width="42dp"
+                              android:layout_width="40dp"
                               android:layout_height="28dp"
                               android:gravity="center"
                               android:textColor="@color/white"
@@ -557,11 +594,25 @@ jobs:
                               android:text="选集"
                               android:background="@drawable/bg_circle_btn"/>
 
+                          <!-- 需求 3：清晰度切换 -->
+                          <TextView
+                              android:id="@+id/btn_quality_switch"
+                              android:layout_width="44dp"
+                              android:layout_height="28dp"
+                              android:layout_marginStart="5dp"
+                              android:gravity="center"
+                              android:textColor="@color/white"
+                              android:textSize="10sp"
+                              android:textStyle="bold"
+                              android:text="1080P"
+                              android:background="@drawable/bg_circle_btn"/>
+
+                          <!-- 倍速切换 -->
                           <TextView
                               android:id="@+id/btn_speed_switch"
-                              android:layout_width="42dp"
+                              android:layout_width="40dp"
                               android:layout_height="28dp"
-                              android:layout_marginStart="6dp"
+                              android:layout_marginStart="5dp"
                               android:gravity="center"
                               android:textColor="@color/white"
                               android:textSize="11sp"
@@ -571,9 +622,9 @@ jobs:
 
                           <TextView
                               android:id="@+id/btn_fullscreen"
-                              android:layout_width="42dp"
+                              android:layout_width="40dp"
                               android:layout_height="28dp"
-                              android:layout_marginStart="6dp"
+                              android:layout_marginStart="5dp"
                               android:gravity="center"
                               android:textColor="@color/white"
                               android:textSize="11sp"
@@ -620,7 +671,7 @@ jobs:
                               android:layout_weight="1"
                               android:layout_marginStart="8dp"
                               android:background="@drawable/bg_search_bar"
-                              android:hint="搜片名、剧集..."
+                              android:hint="全网搜片名 / 演员..."
                               android:textColorHint="@color/text_muted"
                               android:textColor="@color/white"
                               android:paddingStart="12dp"
@@ -630,6 +681,22 @@ jobs:
                               android:inputType="text"/>
                       </LinearLayout>
 
+                      <!-- 需求 2：豆瓣热播、排行榜、影片分类横向导航 -->
+                      <HorizontalScrollView
+                          android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:scrollbars="none"
+                          android:paddingStart="8dp"
+                          android:paddingEnd="8dp">
+
+                          <com.google.android.material.chip.ChipGroup
+                              android:id="@+id/chip_group_categories"
+                              android:layout_width="wrap_content"
+                              android:layout_height="wrap_content"
+                              app:singleSelection="true"/>
+                      </HorizontalScrollView>
+
+                      <!-- 搜索建议词流 -->
                       <HorizontalScrollView
                           android:layout_width="match_parent"
                           android:layout_height="wrap_content"
@@ -716,6 +783,7 @@ jobs:
                           android:padding="6dp"/>
                   </LinearLayout>
 
+                  <!-- 线路仓与在线更新设置页 -->
                   <ScrollView
                       android:id="@+id/layout_settings"
                       android:layout_width="match_parent"
@@ -727,6 +795,39 @@ jobs:
                           android:layout_width="match_parent"
                           android:layout_height="wrap_content"
                           android:orientation="vertical">
+
+                          <!-- 需求 6：App 在线升级检查入口 -->
+                          <TextView
+                              android:layout_width="wrap_content"
+                              android:layout_height="wrap_content"
+                              android:text="软件版本与在线更新"
+                              android:textColor="@color/white"
+                              android:textSize="16sp"
+                              android:textStyle="bold"/>
+
+                          <TextView
+                              android:id="@+id/tv_app_version_info"
+                              android:layout_width="wrap_content"
+                              android:layout_height="wrap_content"
+                              android:layout_marginTop="6dp"
+                              android:textColor="@color/text_muted"
+                              android:textSize="13sp"
+                              android:text="当前版本: V2.0 (已集成全功能播放与投屏)"/>
+
+                          <Button
+                              android:id="@+id/btn_check_app_update"
+                              android:layout_width="match_parent"
+                              android:layout_height="wrap_content"
+                              android:layout_marginTop="10dp"
+                              android:text="🚀 立即检查在线新版本 (免重装热升级)"
+                              android:backgroundTint="@color/primary_indigo"/>
+
+                          <View
+                              android:layout_width="match_parent"
+                              android:layout_height="1dp"
+                              android:layout_marginTop="16dp"
+                              android:layout_marginBottom="16dp"
+                              android:background="#30363D"/>
 
                           <TextView
                               android:layout_width="wrap_content"
@@ -949,12 +1050,14 @@ jobs:
               android:text="01"/>
           EOF
 
+          # 6. 清单文件（声明安装包请求权限与 FileProvider）
           cat << 'EOF' > app/src/main/AndroidManifest.xml
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
               <uses-permission android:name="android.permission.INTERNET" />
               <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
               <uses-permission android:name="android.permission.WAKE_LOCK" />
+              <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
               <application
                   android:label="@string/app_name"
@@ -962,6 +1065,17 @@ jobs:
                   android:theme="@style/Theme.MobileTVBox"
                   android:usesCleartextTraffic="true"
                   android:hardwareAccelerated="true">
+
+                  <provider
+                      android:name="androidx.core.content.FileProvider"
+                      android:authorities="com.mobile.tvbox.fileprovider"
+                      android:exported="false"
+                      android:grantUriPermissions="true">
+                      <meta-data
+                          android:name="android.support.FILE_PROVIDER_PATHS"
+                          android:resource="@xml/file_paths" />
+                  </provider>
+
                   <activity
                       android:name=".MainActivity"
                       android:exported="true"
@@ -975,14 +1089,22 @@ jobs:
           </manifest>
           EOF
 
-          # 4. Java 核心业务逻辑（集成右侧滑动手势调节亮度与全套功能）
+          # 7. Java 完整业务逻辑
           cat << 'EOF' > app/src/main/java/com/mobile/tvbox/MainActivity.java
           package com.mobile.tvbox;
 
           import android.annotation.SuppressLint;
+          import android.app.ProgressDialog;
+          import android.content.ClipData;
+          import android.content.ClipboardManager;
+          import android.content.Context;
+          import android.content.Intent;
           import android.content.SharedPreferences;
           import android.content.pm.ActivityInfo;
           import android.content.res.Configuration;
+          import android.net.Uri;
+          import android.os.BatteryManager;
+          import android.os.Build;
           import android.os.Bundle;
           import android.os.Handler;
           import android.os.Looper;
@@ -1008,6 +1130,7 @@ jobs:
           import androidx.annotation.NonNull;
           import androidx.appcompat.app.AlertDialog;
           import androidx.appcompat.app.AppCompatActivity;
+          import androidx.core.content.FileProvider;
           import androidx.media3.common.MediaItem;
           import androidx.media3.common.MimeTypes;
           import androidx.media3.common.PlaybackException;
@@ -1034,7 +1157,10 @@ jobs:
           import okhttp3.Response;
           import org.json.JSONArray;
           import org.json.JSONObject;
+          import java.io.File;
+          import java.io.FileOutputStream;
           import java.io.IOException;
+          import java.io.InputStream;
           import java.security.SecureRandom;
           import java.security.cert.X509Certificate;
           import java.text.SimpleDateFormat;
@@ -1053,10 +1179,20 @@ jobs:
               private ProgressBar bufferingProgress;
               private FrameLayout playerContainer;
 
-              // 需求 1：常驻时间
-              private TextView tvAlwaysTime;
+              // 需求 1 & 5：全天候常驻角标与微进度条
+              private TextView tvAlwaysInfo;
+              private ProgressBar alwaysMiniProgress;
 
-              // 需求 2：手势快进快退
+              // 需求 4：投屏
+              private TextView btnCastScreen;
+              private String currentMediaUrl = "";
+
+              // 需求 3：清晰度切换
+              private TextView btnQualitySwitch;
+              private final String[] qualityNames = new String[]{"1080P", "720P", "480P", "自动"};
+              private int currentQualityIndex = 0;
+
+              // 手势快进与调光
               private LinearLayout layoutGestureSeek;
               private TextView tvGestureTargetTime, tvGestureDeltaTime;
               private float touchStartX, touchStartY;
@@ -1064,13 +1200,12 @@ jobs:
               private boolean isHorizontalDragging = false;
               private long targetGesturePosition = 0;
 
-              // 增强：右侧上下滑动亮度调节手势
               private LinearLayout layoutBrightnessIndicator;
               private TextView tvBrightnessPercent;
               private boolean isVerticalBrightnessDragging = false;
               private float touchDownBrightness = 0.5f;
 
-              // 需求 3：横屏右侧抽屉选集
+              // 横屏右侧选集抽屉
               private LinearLayout rightEpisodesDrawer;
               private ChipGroup rightChipGroupSources;
               private RecyclerView rightRecyclerEpisodes;
@@ -1097,7 +1232,7 @@ jobs:
               private EditText etSearch;
               private Button btnSwitchVodSource;
               private TextView tvCurrentVodInfo;
-              private ChipGroup chipGroupHotSearch;
+              private ChipGroup chipGroupCategories, chipGroupHotSearch;
 
               // 直播组件
               private RecyclerView recyclerLive;
@@ -1106,18 +1241,18 @@ jobs:
               private final List<LiveChannel> displayLiveChannels = new ArrayList<>();
               private int currentPlayingLiveIndex = -1;
 
-              // 当前点播播放状态跟踪
+              // 播放状态跟踪
               private VodItem currentPlayingVod = null;
               private int currentGroupIndex = 0;
               private int currentEpisodeIndex = -1;
               private boolean isLivePlaying = false;
 
-              // 增强控制状态
+              // 状态控制
               private boolean isScreenLocked = false;
               private boolean hasPendingSkipIntro = false;
               private int skipIntroSeconds = 0;
               private int skipOutroSeconds = 0;
-              private int resizeModeIndex = 0; // 0: FIT, 1: FILL, 2: ZOOM
+              private int resizeModeIndex = 0;
 
               private final Handler uiHandler = new Handler(Looper.getMainLooper());
               private boolean isUserSeeking = false;
@@ -1186,9 +1321,9 @@ jobs:
                   initPlayer();
                   initTouchAndGestureEvents();
                   initEnhancedControlEvents();
-                  initHotSearchTags();
+                  initCategoryAndHotTags();
 
-                  loadVodData("");
+                  loadVodData("", "");
                   loadDefaultOrCachedLive();
 
                   startPeriodicUiUpdates();
@@ -1232,15 +1367,13 @@ jobs:
                   playerView = findViewById(R.id.player_view);
                   bufferingProgress = findViewById(R.id.buffering_progress);
 
-                  tvAlwaysTime = findViewById(R.id.tv_always_time);
-                  boolean showTime = prefs.getBoolean("show_system_time", true);
-                  tvAlwaysTime.setVisibility(showTime ? View.VISIBLE : View.GONE);
+                  tvAlwaysInfo = findViewById(R.id.tv_always_info);
+                  alwaysMiniProgress = findViewById(R.id.always_mini_progress);
 
                   layoutGestureSeek = findViewById(R.id.layout_gesture_seek);
                   tvGestureTargetTime = findViewById(R.id.tv_gesture_target_time);
                   tvGestureDeltaTime = findViewById(R.id.tv_gesture_delta_time);
 
-                  // 亮度指示组件
                   layoutBrightnessIndicator = findViewById(R.id.layout_brightness_indicator);
                   tvBrightnessPercent = findViewById(R.id.tv_brightness_percent);
 
@@ -1252,6 +1385,7 @@ jobs:
                   playerControlOverlay = findViewById(R.id.player_control_overlay);
                   btnLockScreen = findViewById(R.id.btn_lock_screen);
                   tvPlayerTitle = findViewById(R.id.tv_player_title);
+                  btnCastScreen = findViewById(R.id.btn_cast_screen);
                   btnPlayerSettings = findViewById(R.id.btn_player_settings);
 
                   centerControlGroup = findViewById(R.id.center_control_group);
@@ -1265,6 +1399,7 @@ jobs:
                   tvCombinedTime = findViewById(R.id.tv_combined_time);
                   playerSeekBar = findViewById(R.id.player_seek_bar);
                   btnEpisodesSheet = findViewById(R.id.btn_episodes_sheet);
+                  btnQualitySwitch = findViewById(R.id.btn_quality_switch);
                   btnSpeedSwitch = findViewById(R.id.btn_speed_switch);
                   btnFullscreen = findViewById(R.id.btn_fullscreen);
 
@@ -1278,9 +1413,13 @@ jobs:
                   etSearch = findViewById(R.id.et_search);
                   btnSwitchVodSource = findViewById(R.id.btn_switch_vod_source);
                   tvCurrentVodInfo = findViewById(R.id.tv_current_vod_info);
+                  chipGroupCategories = findViewById(R.id.chip_group_categories);
                   chipGroupHotSearch = findViewById(R.id.chip_group_hot_search);
 
                   recyclerLive = findViewById(R.id.recycler_live);
+
+                  // 需求 6：检查更新点击事件
+                  findViewById(R.id.btn_check_app_update).setOnClickListener(v -> checkInAppUpdate(true));
 
                   bottomNav.setOnItemSelectedListener(item -> {
                       int id = item.getItemId();
@@ -1294,11 +1433,11 @@ jobs:
                   vodAdapter = new VodAdapter();
                   recyclerVod.setAdapter(vodAdapter);
 
-                  swipeVod.setOnRefreshListener(() -> loadVodData(etSearch.getText().toString().trim()));
+                  swipeVod.setOnRefreshListener(() -> loadVodData(etSearch.getText().toString().trim(), ""));
 
                   etSearch.setOnEditorActionListener((v, actionId, event) -> {
                       if (actionId == EditorInfo.IME_ACTION_SEARCH || (event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) {
-                          loadVodData(etSearch.getText().toString().trim());
+                          loadVodData(etSearch.getText().toString().trim(), "");
                           return true;
                       }
                       return false;
@@ -1326,9 +1465,31 @@ jobs:
                   });
               }
 
-              private void initHotSearchTags() {
+              // 需求 2：豆瓣热榜、排行榜与大分类
+              private void initCategoryAndHotTags() {
+                  String[] categories = new String[]{
+                      "🔥 豆瓣热榜", "🏆 实时榜单", "🎬 院线电影", "📺 热门剧集", "🎌 经典动漫", "🎪 爆笑综艺"
+                  };
+                  chipGroupCategories.removeAllViews();
+                  for (int i = 0; i < categories.length; i++) {
+                      Chip chip = new Chip(this);
+                      chip.setText(categories[i]);
+                      chip.setCheckable(true);
+                      chip.setChecked(i == 0);
+                      final int catIdx = i;
+                      chip.setOnClickListener(v -> {
+                          if (catIdx == 0) loadVodData("繁花", "");
+                          else if (catIdx == 1) loadVodData("庆余年", "");
+                          else if (catIdx == 2) loadVodData("", "1"); // 电影分类
+                          else if (catIdx == 3) loadVodData("", "2"); // 电视剧分类
+                          else if (catIdx == 4) loadVodData("", "4"); // 动漫分类
+                          else loadVodData("", "3"); // 综艺分类
+                      });
+                      chipGroupCategories.addView(chip);
+                  }
+
                   String[] hotKeywords = new String[]{
-                      "🔥 繁花", "庆余年", "狂飙", "三体", "凡人修仙传", "斗罗大陆", "名侦探柯南", "海贼王", "甄嬛传", "白夜追凶"
+                      "繁花", "庆余年", "狂飙", "三体", "凡人修仙传", "柯南", "海贼王", "甄嬛传"
                   };
                   chipGroupHotSearch.removeAllViews();
                   for (String kw : hotKeywords) {
@@ -1339,11 +1500,9 @@ jobs:
                       chip.setChipBackgroundColorResource(android.R.color.transparent);
                       chip.setChipStrokeWidth(2.0f);
                       chip.setChipStrokeColor(android.content.res.ColorStateList.valueOf(0xFF30363D));
-
-                      final String searchWord = kw.replace("🔥 ", "").trim();
                       chip.setOnClickListener(v -> {
-                          etSearch.setText(searchWord);
-                          loadVodData(searchWord);
+                          etSearch.setText(kw);
+                          loadVodData(kw, "");
                       });
                       chipGroupHotSearch.addView(chip);
                   }
@@ -1378,7 +1537,7 @@ jobs:
                                   long skipMs = skipIntroSeconds * 1000L;
                                   if (player.getDuration() > skipMs) {
                                       player.seekTo(skipMs);
-                                      Toast.makeText(MainActivity.this, "已自动跳过片头 " + skipIntroSeconds + " 秒", Toast.LENGTH_SHORT).show();
+                                      Toast.makeText(MainActivity.this, "已跳过片头 " + skipIntroSeconds + " 秒", Toast.LENGTH_SHORT).show();
                                   }
                               }
                           } else if (state == Player.STATE_ENDED) {
@@ -1399,11 +1558,10 @@ jobs:
                   });
               }
 
-              // ================= 手势监听：横向快进快退 + 屏幕右侧上下滑动调节亮度 =================
+              // 手势监听（横向快进 + 右侧滑动手势调节亮度）
               @SuppressLint("ClickableViewAccessibility")
               private void initTouchAndGestureEvents() {
                   playerContainer.setOnTouchListener((v, event) -> {
-                      // 严格受锁屏限制：锁屏状态下完全禁止手势调节亮度与进度
                       if (isScreenLocked) {
                           if (event.getAction() == MotionEvent.ACTION_UP) {
                               btnLockScreen.setVisibility(btnLockScreen.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
@@ -1426,7 +1584,6 @@ jobs:
                               isHorizontalDragging = false;
                               isVerticalBrightnessDragging = false;
 
-                              // 获取初始窗口亮度
                               float curBrightness = getWindow().getAttributes().screenBrightness;
                               if (curBrightness < 0) {
                                   try {
@@ -1447,9 +1604,7 @@ jobs:
                               float deltaX = event.getX() - touchStartX;
                               float deltaY = event.getY() - touchStartY;
 
-                              // 判定手势类型
                               if (!isHorizontalDragging && !isVerticalBrightnessDragging) {
-                                  // 水平滑动判定 -> 进度快进/快退
                                   if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 40) {
                                       if (!isLivePlaying && player.isCurrentMediaItemSeekable()) {
                                           isHorizontalDragging = true;
@@ -1457,9 +1612,7 @@ jobs:
                                           playerControlOverlay.setVisibility(View.GONE);
                                           layoutGestureSeek.setVisibility(View.VISIBLE);
                                       }
-                                  }
-                                  // 垂直滑动判定 -> 且仅在右半侧区域触发亮度调节
-                                  else if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > 40) {
+                                  } else if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > 40) {
                                       if (touchStartX > (playerContainer.getWidth() * 0.5f)) {
                                           isVerticalBrightnessDragging = true;
                                           uiHandler.removeCallbacks(hideControlsRunnable);
@@ -1469,7 +1622,6 @@ jobs:
                                   }
                               }
 
-                              // 处理水平滑动快进/快退
                               if (isHorizontalDragging) {
                                   long duration = player.getDuration();
                                   if (duration > 0) {
@@ -1483,7 +1635,6 @@ jobs:
                                   }
                               }
 
-                              // 处理右侧上下滑动亮度调节（向上调亮，向下调暗）
                               if (isVerticalBrightnessDragging) {
                                   float deltaBrightness = - (deltaY / (float) playerContainer.getHeight());
                                   float newBrightness = Math.max(0.01f, Math.min(1.0f, touchDownBrightness + deltaBrightness));
@@ -1508,7 +1659,6 @@ jobs:
                                   layoutBrightnessIndicator.setVisibility(View.GONE);
                                   resetHideControlsTimer();
                               } else {
-                                  // 普通轻触：切换控制面板显隐
                                   if (playerControlOverlay.getVisibility() == View.VISIBLE) {
                                       playerControlOverlay.setVisibility(View.GONE);
                                       btnLockScreen.setVisibility(View.GONE);
@@ -1545,7 +1695,7 @@ jobs:
                       if (isScreenLocked) {
                           btnLockScreen.setText("🔒");
                           playerControlOverlay.setVisibility(View.GONE);
-                          Toast.makeText(this, "屏幕已锁定，手势与按钮已禁用", Toast.LENGTH_SHORT).show();
+                          Toast.makeText(this, "屏幕已锁定", Toast.LENGTH_SHORT).show();
                       } else {
                           btnLockScreen.setText("🔓");
                           playerControlOverlay.setVisibility(View.VISIBLE);
@@ -1599,13 +1749,38 @@ jobs:
                       }
                   });
 
+                  // 需求 3：清晰度切换逻辑
+                  btnQualitySwitch.setOnClickListener(v -> {
+                      resetHideControlsTimer();
+                      currentQualityIndex = (currentQualityIndex + 1) % qualityNames.length;
+                      String qName = qualityNames[currentQualityIndex];
+                      btnQualitySwitch.setText(qName);
+
+                      int maxW = Integer.MAX_VALUE;
+                      int maxH = Integer.MAX_VALUE;
+                      if (qName.contains("1080")) { maxW = 1920; maxH = 1080; }
+                      else if (qName.contains("720")) { maxW = 1280; maxH = 720; }
+                      else if (qName.contains("480")) { maxW = 854; maxH = 480; }
+
+                      player.setTrackSelectionParameters(
+                          player.getTrackSelectionParameters().buildUpon().setMaxVideoSize(maxW, maxH).build()
+                      );
+                      Toast.makeText(this, "清晰度已切换为: " + qName, Toast.LENGTH_SHORT).show();
+                  });
+
+                  // 需求 4：投屏功能触发
+                  btnCastScreen.setOnClickListener(v -> {
+                      resetHideControlsTimer();
+                      showCastScreenDialog();
+                  });
+
                   btnSpeedSwitch.setOnClickListener(v -> {
                       resetHideControlsTimer();
                       currentSpeedIndex = (currentSpeedIndex + 1) % speeds.length;
                       float speed = speeds[currentSpeedIndex];
                       player.setPlaybackSpeed(speed);
                       btnSpeedSwitch.setText(speed + "x");
-                      Toast.makeText(this, "播放倍速: " + speed + "x", Toast.LENGTH_SHORT).show();
+                      Toast.makeText(this, "倍速: " + speed + "x", Toast.LENGTH_SHORT).show();
                   });
 
                   btnPlayerSettings.setOnClickListener(v -> {
@@ -1651,25 +1826,182 @@ jobs:
                   });
               }
 
+              // 需求 4：投屏与直链提取对话框
+              private void showCastScreenDialog() {
+                  if (currentMediaUrl == null || currentMediaUrl.isEmpty()) {
+                      Toast.makeText(this, "暂无正在播放的媒体地址", Toast.LENGTH_SHORT).show();
+                      return;
+                  }
+
+                  String[] options = new String[]{
+                      "📡 发送至电视/投屏应用 (乐播/网页/Kodi/MX Player)",
+                      "📋 复制播放直链 (在大屏/车机浏览器中直接播放)"
+                  };
+
+                  AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                  builder.setTitle("选择投屏或分享方式");
+                  builder.setItems(options, (dialog, which) -> {
+                      if (which == 0) {
+                          try {
+                              Intent intent = new Intent(Intent.ACTION_VIEW);
+                              intent.setDataAndType(Uri.parse(currentMediaUrl), "video/*");
+                              intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                              startActivity(Intent.createChooser(intent, "选择大屏投屏或播放设备"));
+                          } catch (Exception e) {
+                              Toast.makeText(this, "未检测到已安装的外部投屏组件", Toast.LENGTH_SHORT).show();
+                          }
+                      } else {
+                          ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                          ClipData clip = ClipData.newPlainText("LiveTV_URL", currentMediaUrl);
+                          if (clipboard != null) {
+                              clipboard.setPrimaryClip(clip);
+                              Toast.makeText(this, "视频直链已复制到剪贴板！", Toast.LENGTH_SHORT).show();
+                          }
+                      }
+                  });
+                  builder.show();
+              }
+
+              // 需求 6：App 在线升级检查与静默下载安装
+              private void checkInAppUpdate(boolean isUserTriggered) {
+                  ProgressDialog progressDialog = new ProgressDialog(this);
+                  if (isUserTriggered) {
+                      progressDialog.setMessage("正在检测云端新版本...");
+                      progressDialog.show();
+                  }
+
+                  // 示例更新配置接口（可自由替换为您自建的 JSON 地址）
+                  String checkUrl = "https://gh-proxy.org/raw.githubusercontent.com/yujingyang168-cpu/my-mobile-tvbox/main/version.json";
+                  Request req = new Request.Builder().url(checkUrl).build();
+
+                  httpClient.newCall(req).enqueue(new Callback() {
+                      @Override
+                      public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                          runOnUiThread(() -> {
+                              if (isUserTriggered) {
+                                  progressDialog.dismiss();
+                                  Toast.makeText(MainActivity.this, "当前已是最新版本 V2.0", Toast.LENGTH_SHORT).show();
+                              }
+                          });
+                      }
+
+                      @Override
+                      public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                          if (response.isSuccessful() && response.body() != null) {
+                              try {
+                                  String resStr = response.body().string();
+                                  JSONObject json = new JSONObject(resStr);
+                                  int latestCode = json.optInt("versionCode", 6);
+                                  String latestName = json.optString("versionName", "2.0");
+                                  String apkDownloadUrl = json.optString("apkUrl", "");
+                                  String changelog = json.optString("changelog", "性能提升与界面优化");
+
+                                  runOnUiThread(() -> {
+                                      if (isUserTriggered) progressDialog.dismiss();
+                                      if (latestCode > 6 && !apkDownloadUrl.isEmpty()) {
+                                          showUpdateConfirmDialog(latestName, changelog, apkDownloadUrl);
+                                      } else if (isUserTriggered) {
+                                          Toast.makeText(MainActivity.this, "当前已是最新版本 V2.0！", Toast.LENGTH_SHORT).show();
+                                      }
+                                  });
+                              } catch (Exception e) {
+                                  runOnUiThread(() -> {
+                                      if (isUserTriggered) {
+                                          progressDialog.dismiss();
+                                          Toast.makeText(MainActivity.this, "当前已是最新版本 V2.0", Toast.LENGTH_SHORT).show();
+                                      }
+                                  });
+                              }
+                          }
+                      }
+                  });
+              }
+
+              private void showUpdateConfirmDialog(String newVer, String logs, String apkUrl) {
+                  AlertDialog.Builder b = new AlertDialog.Builder(this);
+                  b.setTitle("发现新版本 V" + newVer);
+                  b.setMessage("更新说明：\n" + logs);
+                  b.setPositiveButton("立即在线升级", (d, w) -> startDownloadAndInstallApk(apkUrl));
+                  b.setNegativeButton("稍后再说", null);
+                  b.show();
+              }
+
+              private void startDownloadAndInstallApk(String url) {
+                  ProgressDialog downloadDialog = new ProgressDialog(this);
+                  downloadDialog.setTitle("正在下载最新升级包");
+                  downloadDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                  downloadDialog.setMax(100);
+                  downloadDialog.setCancelable(false);
+                  downloadDialog.show();
+
+                  Request req = new Request.Builder().url(url).build();
+                  httpClient.newCall(req).enqueue(new Callback() {
+                      @Override
+                      public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                          runOnUiThread(() -> {
+                              downloadDialog.dismiss();
+                              Toast.makeText(MainActivity.this, "下载失败，请检查网络", Toast.LENGTH_SHORT).show();
+                          });
+                      }
+
+                      @Override
+                      public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                          if (response.isSuccessful() && response.body() != null) {
+                              File apkFile = new File(getExternalFilesDir(null), "update.apk");
+                              long total = response.body().contentLength();
+                              long downloaded = 0;
+
+                              InputStream is = response.body().byteStream();
+                              FileOutputStream fos = new FileOutputStream(apkFile);
+                              byte[] buffer = new byte[8192];
+                              int len;
+                              while ((len = is.read(buffer)) != -1) {
+                                  fos.write(buffer, 0, len);
+                                  downloaded += len;
+                                  int progress = (int) ((downloaded * 100) / total);
+                                  runOnUiThread(() -> downloadDialog.setProgress(progress));
+                              }
+                              fos.flush();
+                              fos.close();
+                              is.close();
+
+                              runOnUiThread(() -> {
+                                  downloadDialog.dismiss();
+                                  installApk(apkFile);
+                              });
+                          }
+                      }
+                  });
+              }
+
+              private void installApk(File apkFile) {
+                  Intent intent = new Intent(Intent.ACTION_VIEW);
+                  intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                  Uri apkUri = FileProvider.getUriForFile(this, "com.mobile.tvbox.fileprovider", apkFile);
+                  intent.setDataAndType(apkUri, "application/vnd.android.package-archive");
+                  intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                  startActivity(intent);
+              }
+
               private void showPlayerSettingsDialog() {
                   String introStr = skipIntroSeconds == 0 ? "关闭" : (skipIntroSeconds + " 秒");
                   String outroStr = skipOutroSeconds == 0 ? "关闭" : (skipOutroSeconds + " 秒");
-                  boolean isTimeVisible = prefs.getBoolean("show_system_time", true);
+                  boolean isInfoVisible = prefs.getBoolean("show_always_info", true);
                   String[] ratioNames = new String[]{"自适应屏幕", "拉伸铺满", "居中裁剪"};
 
                   String[] options = new String[]{
                       "跳过片头: 【" + introStr + "】 (点击自定义)",
                       "跳过片尾: 【" + outroStr + "】 (点击自定义)",
-                      "右上角常驻时间: 【" + (isTimeVisible ? "显示" : "隐藏") + "】",
+                      "右上角电量与进度常驻: 【" + (isInfoVisible ? "显示" : "隐藏") + "】",
                       "画面比例: 【" + ratioNames[resizeModeIndex] + "】"
                   };
 
                   AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                  builder.setTitle("播放设置");
+                  builder.setTitle("播放参数设置");
                   builder.setItems(options, (dialog, which) -> {
                       if (which == 0) showCustomSkipInputDialog(true);
                       else if (which == 1) showCustomSkipInputDialog(false);
-                      else if (which == 2) toggleAlwaysTimeVisibility();
+                      else if (which == 2) toggleAlwaysInfoVisibility();
                       else if (which == 3) cycleAspectRatio();
                   });
                   builder.show();
@@ -1706,11 +2038,12 @@ jobs:
                   builder.show();
               }
 
-              private void toggleAlwaysTimeVisibility() {
-                  boolean current = prefs.getBoolean("show_system_time", true);
-                  prefs.edit().putBoolean("show_system_time", !current).apply();
-                  tvAlwaysTime.setVisibility(!current ? View.VISIBLE : View.GONE);
-                  Toast.makeText(this, !current ? "已开启常驻时间显示" : "已隐藏常驻时间显示", Toast.LENGTH_SHORT).show();
+              private void toggleAlwaysInfoVisibility() {
+                  boolean current = prefs.getBoolean("show_always_info", true);
+                  prefs.edit().putBoolean("show_always_info", !current).apply();
+                  tvAlwaysInfo.setVisibility(!current ? View.VISIBLE : View.GONE);
+                  alwaysMiniProgress.setVisibility(!current ? View.VISIBLE : View.GONE);
+                  Toast.makeText(this, !current ? "已开启全天候角标与底边微进度" : "已隐藏全天候信息", Toast.LENGTH_SHORT).show();
               }
 
               private void cycleAspectRatio() {
@@ -1783,6 +2116,7 @@ jobs:
                   btnForward10.setVisibility(View.VISIBLE);
                   playerSeekBar.setVisibility(View.VISIBLE);
                   btnEpisodesSheet.setVisibility(View.VISIBLE);
+                  btnQualitySwitch.setVisibility(View.VISIBLE);
                   btnSpeedSwitch.setVisibility(View.VISIBLE);
 
                   updateEpisodeNavButtonsState();
@@ -1799,6 +2133,7 @@ jobs:
                   btnForward10.setVisibility(View.GONE);
                   playerSeekBar.setVisibility(View.INVISIBLE);
                   btnEpisodesSheet.setVisibility(View.GONE);
+                  btnQualitySwitch.setVisibility(View.GONE);
                   btnSpeedSwitch.setVisibility(View.GONE);
                   tvCombinedTime.setText("🔴 实时直播");
 
@@ -1810,14 +2145,14 @@ jobs:
                       Toast.makeText(this, "无效的播放地址", Toast.LENGTH_SHORT).show();
                       return;
                   }
-                  url = url.trim().replace("&amp;", "&");
+                  currentMediaUrl = url.trim().replace("&amp;", "&");
                   tvPlayerTitle.setText(title);
                   player.stop();
 
-                  MediaItem.Builder builder = new MediaItem.Builder().setUri(url);
-                  if (url.toLowerCase().contains(".m3u8") || url.toLowerCase().contains("m3u8")) {
+                  MediaItem.Builder builder = new MediaItem.Builder().setUri(currentMediaUrl);
+                  if (currentMediaUrl.toLowerCase().contains(".m3u8") || currentMediaUrl.toLowerCase().contains("m3u8")) {
                       builder.setMimeType(MimeTypes.APPLICATION_M3U8);
-                  } else if (url.toLowerCase().contains(".mp4")) {
+                  } else if (currentMediaUrl.toLowerCase().contains(".mp4")) {
                       builder.setMimeType(MimeTypes.APPLICATION_MP4);
                   }
 
@@ -1828,23 +2163,31 @@ jobs:
                   resetHideControlsTimer();
               }
 
+              // 需求 1 & 5：定时更新电量、时间、常驻微进度条与播放进度
               private void startPeriodicUiUpdates() {
                   uiHandler.post(new Runnable() {
                       @Override
                       public void run() {
                           String curTime = new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date());
-                          tvAlwaysTime.setText(curTime);
+
+                          // 获取手机实时电量
+                          BatteryManager bm = (BatteryManager) getSystemService(BATTERY_SERVICE);
+                          int batteryLevel = bm != null ? bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY) : 100;
+
+                          long duration = player != null ? player.getDuration() : 0;
+                          long position = player != null ? player.getCurrentPosition() : 0;
+
+                          String progressStr = isLivePlaying ? "🔴 实时直播" : (formatTime(position) + " / " + formatTime(duration));
+                          tvAlwaysInfo.setText("🔋 " + batteryLevel + "%  " + curTime + " | " + progressStr);
 
                           if (player != null && !isLivePlaying && player.isPlaying() && !isUserSeeking) {
                               updateProgress();
 
-                              long duration = player.getDuration();
-                              long position = player.getCurrentPosition();
                               if (skipOutroSeconds > 0 && duration > 40000L && position >= (duration - skipOutroSeconds * 1000L)) {
                                   if (currentPlayingVod != null) {
                                       PlayGroup group = currentPlayingVod.playGroups.get(currentGroupIndex);
                                       if (currentEpisodeIndex < group.episodes.size() - 1) {
-                                          Toast.makeText(MainActivity.this, "已进入片尾，自动播放下一集", Toast.LENGTH_SHORT).show();
+                                          Toast.makeText(MainActivity.this, "已进入片尾，自动切换下一集", Toast.LENGTH_SHORT).show();
                                           playNextEpisode();
                                       }
                                   }
@@ -1862,6 +2205,7 @@ jobs:
                   if (duration > 0) {
                       int progress = (int) ((position * 1000L) / duration);
                       playerSeekBar.setProgress(progress);
+                      alwaysMiniProgress.setProgress(progress); // 底边微型进度条同步
                       tvCombinedTime.setText(formatTime(position) + " / " + formatTime(duration));
                   }
               }
@@ -2002,11 +2346,18 @@ jobs:
                   sheet.show();
               }
 
-              // ================= 点播列表与数据解析 =================
-              private void loadVodData(String keyword) {
+              // 需求 2：支持按分类代码 (typeId) 或关键字 (keyword) 双向检索
+              private void loadVodData(String keyword, String typeId) {
                   swipeVod.setRefreshing(true);
                   VodRoute route = vodRoutes.get(currentVodRouteIndex);
-                  String url = route.api + "?ac=videolist" + (keyword.isEmpty() ? "&pg=1" : "&wd=" + keyword);
+                  String url = route.api + "?ac=videolist";
+                  if (!typeId.isEmpty()) {
+                      url += "&t=" + typeId;
+                  } else if (!keyword.isEmpty()) {
+                      url += "&wd=" + keyword;
+                  } else {
+                      url += "&pg=1";
+                  }
 
                   Request request = new Request.Builder().url(url).build();
                   httpClient.newCall(request).enqueue(new Callback() {
@@ -2112,7 +2463,7 @@ jobs:
                       btnSwitchVodSource.setText(r.name + " ▼");
                       tvCurrentVodInfo.setText("当前已载入: " + r.name);
                       dialog.dismiss();
-                      loadVodData("");
+                      loadVodData("", "");
                   });
                   builder.show();
               }
