@@ -44,7 +44,6 @@ jobs:
           mkdir -p app/src/main/res/menu
           mkdir -p app/src/main/res/xml
 
-          # 永久专属签名密钥复用
           if [ ! -f app/release.keystore ]; then
             keytool -genkeypair -v -keystore app/release.keystore \
               -alias tvbox \
@@ -200,7 +199,6 @@ jobs:
           </vector>
           EOF
 
-          # 安全独立矢量图标，彻底避免引用任何系统私有资源
           cat << 'EOF' > app/src/main/res/drawable/ic_nav_vod.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
               <path android:fillColor="#FFFFFF" android:pathData="M4,6H20V18H4z M2,4v16h20V4H2z M6,8h2v2H6z M6,11h2v2H6z M6,14h2v2H6z M16,8h2v2h-2z M16,11h2v2h-2z M16,14h2v2h-2z"/>
@@ -363,7 +361,6 @@ jobs:
                       android:text="🔋 100%  12:00 | 00:00 / 00:00"
                       android:visibility="visible"/>
 
-                  <!-- 锁定屏幕时自动隐藏微型进度条，仅在未锁定时跟随播放 -->
                   <ProgressBar
                       android:id="@+id/always_mini_progress"
                       style="?android:attr/progressBarStyleHorizontal"
@@ -482,9 +479,7 @@ jobs:
                           <TextView android:id="@+id/tv_combined_time" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="@color/white" android:textSize="11sp" android:text="00:00 / 00:00"/>
                           <SeekBar android:id="@+id/player_seek_bar" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:max="1000" android:progress="0"/>
                           <TextView android:id="@+id/btn_episodes_sheet" android:layout_width="38dp" android:layout_height="28dp" android:gravity="center" android:textColor="@color/white" android:textSize="11sp" android:text="选集" android:background="@drawable/bg_circle_btn"/>
-                          <!-- 清晰度弹出式单选按钮 -->
                           <TextView android:id="@+id/btn_quality_switch" android:layout_width="44dp" android:layout_height="28dp" android:layout_marginStart="4dp" android:gravity="center" android:textColor="@color/white" android:textSize="10sp" android:textStyle="bold" android:text="1080P" android:background="@drawable/bg_circle_btn"/>
-                          <!-- 画面比例独立弹出式单选按钮 -->
                           <TextView android:id="@+id/btn_aspect_ratio" android:layout_width="38dp" android:layout_height="28dp" android:layout_marginStart="4dp" android:gravity="center" android:textColor="@color/white" android:textSize="10sp" android:textStyle="bold" android:text="比例" android:background="@drawable/bg_circle_btn"/>
                           <TextView android:id="@+id/btn_speed_switch" android:layout_width="38dp" android:layout_height="28dp" android:layout_marginStart="4dp" android:gravity="center" android:textColor="@color/white" android:textSize="11sp" android:textStyle="bold" android:text="1.0x" android:background="@drawable/bg_circle_btn"/>
                           <TextView android:id="@+id/btn_fullscreen" android:layout_width="38dp" android:layout_height="28dp" android:layout_marginStart="4dp" android:gravity="center" android:textColor="@color/white" android:textSize="11sp" android:text="全屏" android:background="@drawable/bg_circle_btn"/>
@@ -492,7 +487,6 @@ jobs:
                   </RelativeLayout>
               </FrameLayout>
 
-              <!-- 主内容容器与浮动搜索联想层 -->
               <FrameLayout
                   android:id="@+id/content_container"
                   android:layout_width="match_parent"
@@ -533,7 +527,6 @@ jobs:
                       </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
                   </LinearLayout>
 
-                  <!-- 搜索实时联想下拉悬浮面板 -->
                   <LinearLayout
                       android:id="@+id/layout_search_suggestions"
                       android:layout_width="match_parent"
@@ -657,7 +650,6 @@ jobs:
           </LinearLayout>
           EOF
 
-          # 确保根节点包含完整的命名空间声明
           cat << 'EOF' > app/src/main/res/layout/dialog_episodes.xml
           <?xml version="1.0" encoding="utf-8"?>
           <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -718,7 +710,7 @@ jobs:
           </manifest>
           EOF
 
-      # 步骤 2：生成主 Java 业务代码（纯文本，不包含表达式，解除长度限制）
+      # 步骤 2：生成主 Java 业务代码
       - name: Generate Java Source Code
         run: |
           cat << 'EOF' > app/src/main/java/com/mobile/tvbox/MainActivity.java
@@ -819,14 +811,12 @@ jobs:
               private TextView btnCastScreen;
               private String currentMediaUrl = "";
 
-              // 清晰度与比例选项按钮
               private TextView btnQualitySwitch;
               private TextView btnAspectRatio;
               private final String[] qualityNames = new String[]{"1080P 蓝光", "720P 超清", "480P 高清", "自动 (自适应)"};
               private int currentQualityIndex = 0;
               private int resizeModeIndex = 0;
 
-              // 手势快进与调光
               private LinearLayout layoutGestureSeek;
               private TextView tvGestureTargetTime, tvGestureDeltaTime;
               private float touchStartX, touchStartY;
@@ -839,12 +829,10 @@ jobs:
               private boolean isVerticalBrightnessDragging = false;
               private float touchDownBrightness = 0.5f;
 
-              // 横屏抽屉
               private LinearLayout rightEpisodesDrawer;
               private ChipGroup rightChipGroupSources;
               private RecyclerView rightRecyclerEpisodes;
 
-              // 控制层元素
               private RelativeLayout playerControlOverlay;
               private TextView tvPlayerTitle, btnPlayerSettings;
               private TextView btnLockScreen;
@@ -853,12 +841,10 @@ jobs:
               private TextView tvCombinedTime, btnEpisodesSheet, btnSpeedSwitch, btnFullscreen;
               private SeekBar playerSeekBar;
 
-              // 导航容器
               private LinearLayout layoutVod, layoutLive;
               private ScrollView layoutSettings;
               private BottomNavigationView bottomNav;
 
-              // 点播组件
               private SwipeRefreshLayout swipeVod;
               private RecyclerView recyclerVod;
               private VodAdapter vodAdapter;
@@ -867,7 +853,6 @@ jobs:
               private Button btnSwitchVodSource;
               private TextView tvCurrentVodInfo;
 
-              // 分类与搜索联想组件
               private ChipGroup chipGroupMainTypes, chipGroupSubTypes, chipGroupHotSearch;
               private View scrollSubTypes;
               private LinearLayout layoutSearchSuggestions;
@@ -876,14 +861,12 @@ jobs:
               private final List<String> currentSuggestions = new ArrayList<>();
               private TextView tvCacheSize;
 
-              // 直播组件
               private RecyclerView recyclerLive;
               private LiveAdapter liveAdapter;
               private final List<LiveChannel> allLiveChannels = new ArrayList<>();
               private final List<LiveChannel> displayLiveChannels = new ArrayList<>();
               private int currentPlayingLiveIndex = -1;
 
-              // 状态控制
               private VodItem currentPlayingVod = null;
               private int currentGroupIndex = 0;
               private int currentEpisodeIndex = -1;
@@ -901,7 +884,6 @@ jobs:
               private SharedPreferences prefs;
               private OkHttpClient httpClient;
 
-              // 分类模型
               public static class Category {
                   public int id, pid;
                   public String name;
@@ -911,7 +893,6 @@ jobs:
               }
               private final List<Category> dynamicCategories = new ArrayList<>();
 
-              // 丰富内置热门词库
               private final String[] hotSearchSeed = new String[]{
                   "繁花", "庆余年", "狂飙", "三体", "凡人修仙传", "斗罗大陆", "名侦探柯南", "海贼王", "甄嬛传", "白夜追凶",
                   "功夫", "流浪地球", "战狼", "阿凡达", "复仇者联盟", "星际穿越", "泰坦尼克号", "盗梦空间", "肖申克的救赎",
@@ -1125,7 +1106,6 @@ jobs:
                   });
               }
 
-              // ================= 严格规范的分类筛选（使用真实 TypeID） =================
               private void initBuiltInCategories() {
                   String[] mainNames = new String[]{"全部", "电影", "电视剧", "综艺", "动漫", "纪录片"};
                   chipGroupMainTypes.removeAllViews();
@@ -1141,7 +1121,7 @@ jobs:
                           if (idx == 0) {
                               scrollSubTypes.setVisibility(View.GONE);
                               loadVodData("", "");
-                          } else if (idx == 1) { // 电影大类
+                          } else if (idx == 1) {
                               renderSubCategoryChips(new Category[]{
                                   new Category(1, 0, "全部电影"),
                                   new Category(6, 1, "动作片"),
@@ -1152,7 +1132,7 @@ jobs:
                                   new Category(11, 1, "剧情片"),
                                   new Category(12, 1, "战争片")
                               }, 1);
-                          } else if (idx == 2) { // 连续剧大类
+                          } else if (idx == 2) {
                               renderSubCategoryChips(new Category[]{
                                   new Category(2, 0, "全部剧集"),
                                   new Category(13, 2, "国产剧"),
@@ -1161,7 +1141,7 @@ jobs:
                                   new Category(21, 2, "日剧"),
                                   new Category(14, 2, "港台剧")
                               }, 2);
-                          } else if (idx == 3) { // 综艺大类
+                          } else if (idx == 3) {
                               renderSubCategoryChips(new Category[]{
                                   new Category(3, 0, "全部综艺"),
                                   new Category(25, 3, "大陆综艺"),
@@ -1169,14 +1149,14 @@ jobs:
                                   new Category(27, 3, "日韩综艺"),
                                   new Category(28, 3, "欧美综艺")
                               }, 3);
-                          } else if (idx == 4) { // 动漫大类
+                          } else if (idx == 4) {
                               renderSubCategoryChips(new Category[]{
                                   new Category(4, 0, "全部动漫"),
                                   new Category(29, 4, "国产动漫"),
                                   new Category(30, 4, "日韩动漫"),
                                   new Category(31, 4, "欧美动漫")
                               }, 4);
-                          } else { // 纪录片
+                          } else {
                               renderSubCategoryChips(new Category[]{
                                   new Category(20, 0, "全部纪录片"),
                                   new Category(20, 0, "自然探索"),
@@ -1206,7 +1186,6 @@ jobs:
                   loadVodData("", String.valueOf(defaultId));
               }
 
-              // ================= 搜索建议与联想推荐面板 =================
               private void initSearchSuggestionWatcher() {
                   renderHotSeeds();
 
@@ -1306,7 +1285,6 @@ jobs:
                   etSearch.setSelection(keyword.length());
                   layoutSearchSuggestions.setVisibility(View.GONE);
 
-                  // 收起软键盘
                   View view = getCurrentFocus();
                   if (view != null) {
                       InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -1342,7 +1320,6 @@ jobs:
                   }
               }
 
-              // ================= 播放器初始化与锁屏时微进度隐藏 =================
               private void initPlayer() {
                   DefaultHttpDataSource.Factory httpFactory = new DefaultHttpDataSource.Factory()
                       .setUserAgent("Mozilla/5.0 (Linux; Android 14; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36")
@@ -1523,9 +1500,7 @@ jobs:
                   }
               }
 
-              // ================= 播放控制面板交互 =================
               private void initEnhancedControlEvents() {
-                  // 锁定时彻底隐藏底部微进度条，避免与时间角标重复
                   btnLockScreen.setOnClickListener(v -> {
                       isScreenLocked = !isScreenLocked;
                       if (isScreenLocked) {
@@ -1589,13 +1564,11 @@ jobs:
                       }
                   });
 
-                  // 弹出式清晰度单选按钮
                   btnQualitySwitch.setOnClickListener(v -> {
                       resetHideControlsTimer();
                       showQualityDialog();
                   });
 
-                  // 弹出式画面比例单选按钮
                   btnAspectRatio.setOnClickListener(v -> {
                       resetHideControlsTimer();
                       showAspectRatioDialog();
@@ -1658,7 +1631,6 @@ jobs:
                   });
               }
 
-              // 清晰度弹出式单选弹窗
               private void showQualityDialog() {
                   AlertDialog.Builder builder = new AlertDialog.Builder(this);
                   builder.setTitle("选择视频清晰度");
@@ -1682,7 +1654,6 @@ jobs:
                   builder.show();
               }
 
-              // 画面比例弹出式单选弹窗
               private void showAspectRatioDialog() {
                   String[] ratioOptions = new String[]{
                       "自适应 (保持原片比例 Fit)",
@@ -2069,7 +2040,6 @@ jobs:
                       int progress = (int) ((position * 1000L) / duration);
                       playerSeekBar.setProgress(progress);
 
-                      // 仅在屏幕未锁定时更新并显示底边微型进度条
                       if (!isScreenLocked && prefs.getBoolean("show_always_info", true)) {
                           alwaysMiniProgress.setVisibility(View.VISIBLE);
                           alwaysMiniProgress.setProgress(progress);
@@ -2213,7 +2183,6 @@ jobs:
                   sheet.show();
               }
 
-              // 核心：分类使用 &t=检索，彻底解决内容为空与检索不准问题
               private void loadVodData(String keyword, String typeId) {
                   swipeVod.setRefreshing(true);
                   VodRoute route = vodRoutes.get(currentVodRouteIndex);
@@ -2243,7 +2212,6 @@ jobs:
                                   String bodyStr = response.body().string();
                                   JSONObject json = new JSONObject(bodyStr);
 
-                                  // 动态同步采集源的实际类别树，保证100%精准无错漏
                                   JSONArray classArr = json.optJSONArray("class");
                                   if (classArr != null && classArr.length() > 0 && dynamicCategories.isEmpty()) {
                                       for (int c = 0; c < classArr.length(); c++) {
@@ -2340,7 +2308,7 @@ jobs:
                   builder.setTitle("选择 TVBox 点播线路仓");
                   builder.setSingleChoiceItems(names, currentVodRouteIndex, (dialog, which) -> {
                       currentVodRouteIndex = which;
-                      dynamicCategories.clear(); // 换源后重置分类映射
+                      dynamicCategories.clear();
                       VodRoute r = vodRoutes.get(which);
                       btnSwitchVodSource.setText(r.name + " ▼");
                       tvCurrentVodInfo.setText("当前已载入: " + r.name);
@@ -2497,72 +2465,6 @@ jobs:
                   if (player != null) player.release();
               }
 
-              private void updateCacheDisplay() {
-                  new Thread(() -> {
-                      long size = getDirSize(getCacheDir()) + getDirSize(getExternalCacheDir());
-                      String formatted = formatFileSize(size);
-                      runOnUiThread(() -> tvCacheSize.setText("当前缓存占用: " + formatted));
-                  }).start();
-              }
-
-              private void clearAppCache() {
-                  ProgressDialog pd = new ProgressDialog(this);
-                  pd.setMessage("正在深度清理本地媒体与海报缓存...");
-                  pd.show();
-
-                  new Thread(() -> {
-                      deleteDir(getCacheDir());
-                      deleteDir(getExternalCacheDir());
-                      runOnUiThread(() -> Glide.get(MainActivity.this).clearMemory());
-                      Glide.get(MainActivity.this).clearDiskCache();
-
-                      runOnUiThread(() -> {
-                          pd.dismiss();
-                          updateCacheDisplay();
-                          Toast.makeText(MainActivity.this, "缓存清理成功！", Toast.LENGTH_SHORT).show();
-                      });
-                  }).start();
-              }
-
-              private long getDirSize(File dir) {
-                  long size = 0;
-                  if (dir != null && dir.isDirectory()) {
-                      File[] files = dir.listFiles();
-                      if (files != null) {
-                          for (File f : files) {
-                              if (f.isDirectory()) size += getDirSize(f);
-                              else size += f.length();
-                          }
-                      }
-                  } else if (dir != null && dir.isFile()) {
-                      size += dir.length();
-                  }
-                  return size;
-              }
-
-              private boolean deleteDir(File dir) {
-                  if (dir != null && dir.isDirectory()) {
-                      String[] children = dir.list();
-                      if (children != null) {
-                          for (String child : children) {
-                              boolean success = deleteDir(new File(dir, child));
-                              if (!success) return false;
-                          }
-                      }
-                      return dir.delete();
-                  } else if (dir != null && dir.isFile()) {
-                      return dir.delete();
-                  }
-                  return false;
-              }
-
-              private String formatFileSize(long bytes) {
-                  if (bytes <= 0) return "0.00 MB";
-                  double mb = bytes / (1024.0 * 1024.0);
-                  if (mb < 0.1) return String.format(Locale.getDefault(), "%.2f KB", bytes / 1024.0);
-                  return String.format(Locale.getDefault(), "%.2f MB", mb);
-              }
-
               private class VodAdapter extends RecyclerView.Adapter<VodVH> {
                   @NonNull
                   @Override
@@ -2685,7 +2587,6 @@ jobs:
           RUN_NUM: ${{ github.run_number }}
         run: |
           git config user.name "github-actions[bot]"
-          git画面
           git config user.email "github-actions[bot]@users.noreply.github.com"
           
           DOWNLOAD_URL="https://gh-proxy.org/https://github.com/${{ github.repository }}/releases/download/v2.${RUN_NUM}/app-debug.apk"
