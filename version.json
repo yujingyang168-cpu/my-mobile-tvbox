@@ -1,5 +1,5 @@
 {
-  "versionCode": 999,
+  "versionCode": 1019,
   "versionName": "2.19",
   "apkUrl": "https://gh-proxy.org/https://github.com/yujingyang168-cpu/my-mobile-tvbox/releases/download/v2.19/app-debug.apk",
   "changelog": "1. 参照截图全新重构影片详情页（点击不再直接播放，支持线路切换、选集网格与简介）\n2. 底部菜单彻底解耦，电视与我的页面绝不串屏带入播放器\n3. 屏幕锁定状态常驻显示播放进度、系统时间与电量\n4. 优化快进快退拖拽与右侧垂直亮度手势"
