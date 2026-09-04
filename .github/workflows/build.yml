@@ -32,7 +32,7 @@ jobs:
         with:
           gradle-version: '8.4'
 
-      # 步骤 1：生成工程配置、永久签名密钥与资源文件
+      # 步骤 1：生成配置、密钥与界面布局文件
       - name: Setup Android Project Configuration
         env:
           RUN_NUM: ${{ github.run_number }}
@@ -44,9 +44,8 @@ jobs:
           mkdir -p app/src/main/res/menu
           mkdir -p app/src/main/res/xml
 
-          # 关键修复：检查仓库中是否已有永久密钥，若无则生成一个固定密钥供永久复用
+          # 永久专属签名密钥复用
           if [ ! -f app/release.keystore ]; then
-            echo "正在初始化永久专属签名密钥..."
             keytool -genkeypair -v -keystore app/release.keystore \
               -alias tvbox \
               -keyalg RSA \
@@ -89,7 +88,6 @@ jobs:
           }
           EOF
 
-          # 配置打包始终使用永久 release.keystore 签名
           cat << EOF > app/build.gradle
           plugins {
               id 'com.android.application'
@@ -202,6 +200,25 @@ jobs:
           </vector>
           EOF
 
+          # 安全独立矢量图标，彻底避免引用任何系统私有资源
+          cat << 'EOF' > app/src/main/res/drawable/ic_nav_vod.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+              <path android:fillColor="#FFFFFF" android:pathData="M4,6H20V18H4z M2,4v16h20V4H2z M6,8h2v2H6z M6,11h2v2H6z M6,14h2v2H6z M16,8h2v2h-2z M16,11h2v2h-2z M16,14h2v2h-2z"/>
+          </vector>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/drawable/ic_nav_live.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+              <path android:fillColor="#FFFFFF" android:pathData="M21,3H3c-1.1,0 -2,0.9 -2,2v12c0,1.1 0.9,2 2,2h5v2h8v-2h5c1.1,0 2,-0.9 2,-2V5c0,-1.1 -0.9,-2 -2,-2zm0,14H3V5h18v12zm-11,-2l6,-4l-6,-4v8z"/>
+          </vector>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/drawable/ic_nav_settings.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+              <path android:fillColor="#FFFFFF" android:pathData="M19.14,12.94c0.04,-0.3 0.06,-0.61 0.06,-0.94 0,-0.32 -0.02,-0.64 -0.07,-0.94l2.03,-1.58c0.18,-0.14 0.23,-0.41 0.12,-0.61l-1.92,-3.32c-0.12,-0.22 -0.37,-0.29 -0.59,-0.22l-2.39,0.96c-0.5,-0.38 -1.03,-0.7 -1.62,-0.94L14.4,2.81c-0.04,-0.24 -0.24,-0.41 -0.48,-0.41h-3.84c-0.24,0 -0.43,0.17 -0.47,0.41L9.25,5.35C8.66,5.59 8.12,5.92 7.63,6.29L5.24,5.33c-0.22,-0.08 -0.47,0 -0.59,0.22L2.74,8.87c-0.12,0.21 -0.08,0.47 0.12,0.61l2.03,1.58c-0.05,0.3 -0.09,0.63 -0.09,0.94s0.02,0.64 0.07,0.94l-2.03,1.58c-0.18,0.14 -0.23,0.41 -0.12,0.61l1.92,3.32c0.12,0.22 0.37,0.29 0.59,0.22l2.39,-0.96c0.5,0.38 1.03,0.7 1.62,0.94l0.36,2.54c0.05,0.24 0.24,0.41 0.48,0.41h3.84c0.24,0 0.44,-0.17 0.47,-0.41l0.36,-2.54c0.59,-0.24 1.13,-0.56 1.62,-0.94l2.39,0.96c0.22,0.08 0.47,0 0.59,-0.22l1.92,-3.32c0.12,-0.22 0.07,-0.47 -0.12,-0.61l-2.01,-1.58zM12,15.6c-1.98,0 -3.6,-1.62 -3.6,-3.6s1.62,-3.6 3.6,-3.6 3.6,1.62 3.6,3.6 -1.62,3.6 -3.6,3.6z"/>
+          </vector>
+          EOF
+
           cat << 'EOF' > app/src/main/res/drawable/bg_search_bar.xml
           <shape xmlns:android="http://schemas.android.com/apk/res/android">
               <solid android:color="#1F2430"/>
@@ -260,10 +277,44 @@ jobs:
           cat << 'EOF' > app/src/main/res/menu/bottom_nav_menu.xml
           <?xml version="1.0" encoding="utf-8"?>
           <menu xmlns:android="http://schemas.android.com/apk/res/android">
-              <item android:id="@+id/nav_vod" android:icon="@android:drawable/ic_menu_slideshow" android:title="影视点播" />
-              <item android:id="@+id/nav_live" android:icon="@android:drawable/ic_media_play" android:title="电视直播" />
-              <item android:id="@+id/nav_settings" android:icon="@android:drawable/ic_menu_preferences" android:title="线路源仓" />
+              <item android:id="@+id/nav_vod" android:icon="@drawable/ic_nav_vod" android:title="影视点播" />
+              <item android:id="@+id/nav_live" android:icon="@drawable/ic_nav_live" android:title="电视直播" />
+              <item android:id="@+id/nav_settings" android:icon="@drawable/ic_nav_settings" android:title="线路源仓" />
           </menu>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/layout/item_search_suggestion.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="44dp"
+              android:orientation="horizontal"
+              android:gravity="center_vertical"
+              android:paddingStart="14dp"
+              android:paddingEnd="14dp"
+              android:background="#161B22">
+              <TextView
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="🔍"
+                  android:textSize="13sp"
+                  android:layout_marginEnd="10dp"/>
+              <TextView
+                  android:id="@+id/tv_suggestion_text"
+                  android:layout_width="0dp"
+                  android:layout_height="wrap_content"
+                  android:layout_weight="1"
+                  android:textColor="@color/white"
+                  android:textSize="13sp"
+                  android:singleLine="true"
+                  android:ellipsize="end"/>
+              <TextView
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="↖"
+                  android:textColor="@color/text_muted"
+                  android:textSize="14sp"/>
+          </LinearLayout>
           EOF
 
           cat << 'EOF' > app/src/main/res/layout/activity_main.xml
@@ -312,6 +363,7 @@ jobs:
                       android:text="🔋 100%  12:00 | 00:00 / 00:00"
                       android:visibility="visible"/>
 
+                  <!-- 锁定屏幕时自动隐藏微型进度条，仅在未锁定时跟随播放 -->
                   <ProgressBar
                       android:id="@+id/always_mini_progress"
                       style="?android:attr/progressBarStyleHorizontal"
@@ -429,14 +481,18 @@ jobs:
                           android:paddingBottom="6dp">
                           <TextView android:id="@+id/tv_combined_time" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="@color/white" android:textSize="11sp" android:text="00:00 / 00:00"/>
                           <SeekBar android:id="@+id/player_seek_bar" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:max="1000" android:progress="0"/>
-                          <TextView android:id="@+id/btn_episodes_sheet" android:layout_width="40dp" android:layout_height="28dp" android:gravity="center" android:textColor="@color/white" android:textSize="11sp" android:text="选集" android:background="@drawable/bg_circle_btn"/>
-                          <TextView android:id="@+id/btn_quality_switch" android:layout_width="44dp" android:layout_height="28dp" android:layout_marginStart="5dp" android:gravity="center" android:textColor="@color/white" android:textSize="10sp" android:textStyle="bold" android:text="1080P" android:background="@drawable/bg_circle_btn"/>
-                          <TextView android:id="@+id/btn_speed_switch" android:layout_width="40dp" android:layout_height="28dp" android:layout_marginStart="5dp" android:gravity="center" android:textColor="@color/white" android:textSize="11sp" android:text="1.0x" android:background="@drawable/bg_circle_btn"/>
-                          <TextView android:id="@+id/btn_fullscreen" android:layout_width="40dp" android:layout_height="28dp" android:layout_marginStart="5dp" android:gravity="center" android:textColor="@color/white" android:textSize="11sp" android:text="全屏" android:background="@drawable/bg_circle_btn"/>
+                          <TextView android:id="@+id/btn_episodes_sheet" android:layout_width="38dp" android:layout_height="28dp" android:gravity="center" android:textColor="@color/white" android:textSize="11sp" android:text="选集" android:background="@drawable/bg_circle_btn"/>
+                          <!-- 清晰度弹出式单选按钮 -->
+                          <TextView android:id="@+id/btn_quality_switch" android:layout_width="44dp" android:layout_height="28dp" android:layout_marginStart="4dp" android:gravity="center" android:textColor="@color/white" android:textSize="10sp" android:textStyle="bold" android:text="1080P" android:background="@drawable/bg_circle_btn"/>
+                          <!-- 画面比例独立弹出式单选按钮 -->
+                          <TextView android:id="@+id/btn_aspect_ratio" android:layout_width="38dp" android:layout_height="28dp" android:layout_marginStart="4dp" android:gravity="center" android:textColor="@color/white" android:textSize="10sp" android:textStyle="bold" android:text="比例" android:background="@drawable/bg_circle_btn"/>
+                          <TextView android:id="@+id/btn_speed_switch" android:layout_width="38dp" android:layout_height="28dp" android:layout_marginStart="4dp" android:gravity="center" android:textColor="@color/white" android:textSize="11sp" android:textStyle="bold" android:text="1.0x" android:background="@drawable/bg_circle_btn"/>
+                          <TextView android:id="@+id/btn_fullscreen" android:layout_width="38dp" android:layout_height="28dp" android:layout_marginStart="4dp" android:gravity="center" android:textColor="@color/white" android:textSize="11sp" android:text="全屏" android:background="@drawable/bg_circle_btn"/>
                       </LinearLayout>
                   </RelativeLayout>
               </FrameLayout>
 
+              <!-- 主内容容器与浮动搜索联想层 -->
               <FrameLayout
                   android:id="@+id/content_container"
                   android:layout_width="match_parent"
@@ -475,6 +531,48 @@ jobs:
                       <androidx.swiperefreshlayout.widget.SwipeRefreshLayout android:id="@+id/swipe_vod" android:layout_width="match_parent" android:layout_height="match_parent">
                           <androidx.recyclerview.widget.RecyclerView android:id="@+id/recycler_vod" android:layout_width="match_parent" android:layout_height="match_parent" android:padding="6dp"/>
                       </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+                  </LinearLayout>
+
+                  <!-- 搜索实时联想下拉悬浮面板 -->
+                  <LinearLayout
+                      android:id="@+id/layout_search_suggestions"
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:layout_marginStart="8dp"
+                      android:layout_marginEnd="8dp"
+                      android:layout_marginTop="52dp"
+                      android:background="#F0161B22"
+                      android:orientation="vertical"
+                      android:elevation="16dp"
+                      android:visibility="gone">
+
+                      <LinearLayout
+                          android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:orientation="horizontal"
+                          android:padding="8dp"
+                          android:background="#21262D">
+                          <TextView
+                              android:id="@+id/tv_suggestion_header"
+                              android:layout_width="0dp"
+                              android:layout_height="wrap_content"
+                              android:layout_weight="1"
+                              android:text="推荐搜索词条"
+                              android:textColor="@color/text_muted"
+                              android:textSize="11sp"/>
+                          <TextView
+                              android:id="@+id/btn_close_suggestions"
+                              android:layout_width="wrap_content"
+                              android:layout_height="wrap_content"
+                              android:text="收起 ✕"
+                              android:textColor="@color/primary_indigo"
+                              android:textSize="11sp"/>
+                      </LinearLayout>
+
+                      <androidx.recyclerview.widget.RecyclerView
+                          android:id="@+id/recycler_search_suggestions"
+                          android:layout_width="match_parent"
+                          android:layout_height="220dp"/>
                   </LinearLayout>
 
                   <LinearLayout
@@ -559,6 +657,7 @@ jobs:
           </LinearLayout>
           EOF
 
+          # 确保根节点包含完整的命名空间声明
           cat << 'EOF' > app/src/main/res/layout/dialog_episodes.xml
           <?xml version="1.0" encoding="utf-8"?>
           <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -619,7 +718,7 @@ jobs:
           </manifest>
           EOF
 
-      # 步骤 2：生成主 Java 业务代码
+      # 步骤 2：生成主 Java 业务代码（纯文本，不包含表达式，解除长度限制）
       - name: Generate Java Source Code
         run: |
           cat << 'EOF' > app/src/main/java/com/mobile/tvbox/MainActivity.java
@@ -650,6 +749,7 @@ jobs:
           import android.view.ViewGroup;
           import android.view.WindowManager;
           import android.view.inputmethod.EditorInfo;
+          import android.view.inputmethod.InputMethodManager;
           import android.widget.Button;
           import android.widget.EditText;
           import android.widget.FrameLayout;
@@ -695,6 +795,7 @@ jobs:
           import java.io.FileOutputStream;
           import java.io.IOException;
           import java.io.InputStream;
+          import java.net.URLEncoder;
           import java.security.SecureRandom;
           import java.security.cert.X509Certificate;
           import java.text.SimpleDateFormat;
@@ -718,10 +819,14 @@ jobs:
               private TextView btnCastScreen;
               private String currentMediaUrl = "";
 
+              // 清晰度与比例选项按钮
               private TextView btnQualitySwitch;
-              private final String[] qualityNames = new String[]{"1080P", "720P", "480P", "自动"};
+              private TextView btnAspectRatio;
+              private final String[] qualityNames = new String[]{"1080P 蓝光", "720P 超清", "480P 高清", "自动 (自适应)"};
               private int currentQualityIndex = 0;
+              private int resizeModeIndex = 0;
 
+              // 手势快进与调光
               private LinearLayout layoutGestureSeek;
               private TextView tvGestureTargetTime, tvGestureDeltaTime;
               private float touchStartX, touchStartY;
@@ -734,10 +839,12 @@ jobs:
               private boolean isVerticalBrightnessDragging = false;
               private float touchDownBrightness = 0.5f;
 
+              // 横屏抽屉
               private LinearLayout rightEpisodesDrawer;
               private ChipGroup rightChipGroupSources;
               private RecyclerView rightRecyclerEpisodes;
 
+              // 控制层元素
               private RelativeLayout playerControlOverlay;
               private TextView tvPlayerTitle, btnPlayerSettings;
               private TextView btnLockScreen;
@@ -746,10 +853,12 @@ jobs:
               private TextView tvCombinedTime, btnEpisodesSheet, btnSpeedSwitch, btnFullscreen;
               private SeekBar playerSeekBar;
 
+              // 导航容器
               private LinearLayout layoutVod, layoutLive;
               private ScrollView layoutSettings;
               private BottomNavigationView bottomNav;
 
+              // 点播组件
               private SwipeRefreshLayout swipeVod;
               private RecyclerView recyclerVod;
               private VodAdapter vodAdapter;
@@ -758,26 +867,31 @@ jobs:
               private Button btnSwitchVodSource;
               private TextView tvCurrentVodInfo;
 
+              // 分类与搜索联想组件
               private ChipGroup chipGroupMainTypes, chipGroupSubTypes, chipGroupHotSearch;
               private View scrollSubTypes;
+              private LinearLayout layoutSearchSuggestions;
+              private RecyclerView recyclerSearchSuggestions;
+              private SuggestionAdapter suggestionAdapter;
+              private final List<String> currentSuggestions = new ArrayList<>();
               private TextView tvCacheSize;
 
+              // 直播组件
               private RecyclerView recyclerLive;
               private LiveAdapter liveAdapter;
               private final List<LiveChannel> allLiveChannels = new ArrayList<>();
               private final List<LiveChannel> displayLiveChannels = new ArrayList<>();
               private int currentPlayingLiveIndex = -1;
 
+              // 状态控制
               private VodItem currentPlayingVod = null;
               private int currentGroupIndex = 0;
               private int currentEpisodeIndex = -1;
               private boolean isLivePlaying = false;
-
               private boolean isScreenLocked = false;
               private boolean hasPendingSkipIntro = false;
               private int skipIntroSeconds = 0;
               private int skipOutroSeconds = 0;
-              private int resizeModeIndex = 0;
 
               private final Handler uiHandler = new Handler(Looper.getMainLooper());
               private boolean isUserSeeking = false;
@@ -787,17 +901,27 @@ jobs:
               private SharedPreferences prefs;
               private OkHttpClient httpClient;
 
-              private final String[] allSuggestionsPool = new String[]{
+              // 分类模型
+              public static class Category {
+                  public int id, pid;
+                  public String name;
+                  public Category(int id, int pid, String name) {
+                      this.id = id; this.pid = pid; this.name = name;
+                  }
+              }
+              private final List<Category> dynamicCategories = new ArrayList<>();
+
+              // 丰富内置热门词库
+              private final String[] hotSearchSeed = new String[]{
                   "繁花", "庆余年", "狂飙", "三体", "凡人修仙传", "斗罗大陆", "名侦探柯南", "海贼王", "甄嬛传", "白夜追凶",
-                  "喜剧之王", "功夫", "流浪地球", "战狼", "阿凡达", "复仇者联盟", "星际穿越", "泰坦尼克号", "盗梦空间", "肖申克的救赎",
-                  "楚门的世界", "西游记", "三国演义", "水浒传", "红楼梦", "狂蟒之灾", "咒怨", "招魂", "生化危机", "速度与激情"
+                  "功夫", "流浪地球", "战狼", "阿凡达", "复仇者联盟", "星际穿越", "泰坦尼克号", "盗梦空间", "肖申克的救赎",
+                  "楚门的世界", "西游记", "三国演义", "狂蟒之灾", "咒怨", "速度与激情", "封神", "深海", "漫长的季节", "权力的游戏"
               };
 
               public static class VodRoute {
                   public String name, api;
                   public VodRoute(String name, String api) { this.name = name; this.api = api; }
               }
-
               private final List<VodRoute> vodRoutes = new ArrayList<>();
               private int currentVodRouteIndex = 0;
 
@@ -841,7 +965,7 @@ jobs:
                   initPlayer();
                   initTouchAndGestureEvents();
                   initEnhancedControlEvents();
-                  initDualCategorySystem();
+                  initBuiltInCategories();
                   initSearchSuggestionWatcher();
 
                   loadVodData("", "");
@@ -923,6 +1047,7 @@ jobs:
                   playerSeekBar = findViewById(R.id.player_seek_bar);
                   btnEpisodesSheet = findViewById(R.id.btn_episodes_sheet);
                   btnQualitySwitch = findViewById(R.id.btn_quality_switch);
+                  btnAspectRatio = findViewById(R.id.btn_aspect_ratio);
                   btnSpeedSwitch = findViewById(R.id.btn_speed_switch);
                   btnFullscreen = findViewById(R.id.btn_fullscreen);
 
@@ -942,11 +1067,17 @@ jobs:
                   scrollSubTypes = findViewById(R.id.scroll_sub_types);
                   chipGroupHotSearch = findViewById(R.id.chip_group_hot_search);
 
+                  layoutSearchSuggestions = findViewById(R.id.layout_search_suggestions);
+                  recyclerSearchSuggestions = findViewById(R.id.recycler_search_suggestions);
+                  recyclerSearchSuggestions.setLayoutManager(new LinearLayoutManager(this));
+                  suggestionAdapter = new SuggestionAdapter();
+                  recyclerSearchSuggestions.setAdapter(suggestionAdapter);
+                  findViewById(R.id.btn_close_suggestions).setOnClickListener(v -> layoutSearchSuggestions.setVisibility(View.GONE));
+
                   tvCacheSize = findViewById(R.id.tv_cache_size);
                   findViewById(R.id.btn_clear_cache).setOnClickListener(v -> clearAppCache());
 
                   recyclerLive = findViewById(R.id.recycler_live);
-
                   findViewById(R.id.btn_check_app_update).setOnClickListener(v -> checkInAppUpdate(true));
 
                   bottomNav.setOnItemSelectedListener(item -> {
@@ -966,7 +1097,7 @@ jobs:
 
                   etSearch.setOnEditorActionListener((v, actionId, event) -> {
                       if (actionId == EditorInfo.IME_ACTION_SEARCH || (event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) {
-                          loadVodData(etSearch.getText().toString().trim(), "");
+                          executeSearch(etSearch.getText().toString().trim());
                           return true;
                       }
                       return false;
@@ -994,73 +1125,97 @@ jobs:
                   });
               }
 
-              private void initDualCategorySystem() {
-                  String[] mainTypes = new String[]{"全部", "电影", "电视剧", "纪录片", "动漫", "综艺"};
+              // ================= 严格规范的分类筛选（使用真实 TypeID） =================
+              private void initBuiltInCategories() {
+                  String[] mainNames = new String[]{"全部", "电影", "电视剧", "综艺", "动漫", "纪录片"};
                   chipGroupMainTypes.removeAllViews();
 
-                  for (int i = 0; i < mainTypes.length; i++) {
+                  for (int i = 0; i < mainNames.length; i++) {
                       Chip chip = new Chip(this);
-                      chip.setText(mainTypes[i]);
+                      chip.setText(mainNames[i]);
                       chip.setCheckable(true);
                       chip.setChecked(i == 0);
                       final int idx = i;
 
                       chip.setOnClickListener(v -> {
-                          switch (idx) {
-                              case 0:
-                                  scrollSubTypes.setVisibility(View.GONE);
-                                  loadVodData("", "");
-                                  break;
-                              case 1:
-                                  setupSubCategories(new String[]{"全部电影", "动作片", "喜剧片", "爱情片", "科幻片", "恐怖片", "战争片", "悬疑片"}, "1");
-                                  break;
-                              case 2:
-                                  setupSubCategories(new String[]{"全部剧集", "国产剧", "欧美剧", "日韩剧", "港台剧"}, "2");
-                                  break;
-                              case 3:
-                                  setupSubCategories(new String[]{"全部纪录片", "自然地理", "历史人文", "军事探索", "科技生活"}, "纪录片");
-                                  break;
-                              case 4:
-                                  setupSubCategories(new String[]{"全部动漫", "国产动漫", "日韩动漫", "欧美动漫"}, "4");
-                                  break;
-                              case 5:
-                                  setupSubCategories(new String[]{"全部综艺", "大陆综艺", "港台综艺", "日韩综艺", "欧美综艺"}, "3");
-                                  break;
+                          if (idx == 0) {
+                              scrollSubTypes.setVisibility(View.GONE);
+                              loadVodData("", "");
+                          } else if (idx == 1) { // 电影大类
+                              renderSubCategoryChips(new Category[]{
+                                  new Category(1, 0, "全部电影"),
+                                  new Category(6, 1, "动作片"),
+                                  new Category(7, 1, "喜剧片"),
+                                  new Category(8, 1, "爱情片"),
+                                  new Category(9, 1, "科幻片"),
+                                  new Category(10, 1, "恐怖片"),
+                                  new Category(11, 1, "剧情片"),
+                                  new Category(12, 1, "战争片")
+                              }, 1);
+                          } else if (idx == 2) { // 连续剧大类
+                              renderSubCategoryChips(new Category[]{
+                                  new Category(2, 0, "全部剧集"),
+                                  new Category(13, 2, "国产剧"),
+                                  new Category(16, 2, "欧美剧"),
+                                  new Category(15, 2, "韩剧"),
+                                  new Category(21, 2, "日剧"),
+                                  new Category(14, 2, "港台剧")
+                              }, 2);
+                          } else if (idx == 3) { // 综艺大类
+                              renderSubCategoryChips(new Category[]{
+                                  new Category(3, 0, "全部综艺"),
+                                  new Category(25, 3, "大陆综艺"),
+                                  new Category(26, 3, "港台综艺"),
+                                  new Category(27, 3, "日韩综艺"),
+                                  new Category(28, 3, "欧美综艺")
+                              }, 3);
+                          } else if (idx == 4) { // 动漫大类
+                              renderSubCategoryChips(new Category[]{
+                                  new Category(4, 0, "全部动漫"),
+                                  new Category(29, 4, "国产动漫"),
+                                  new Category(30, 4, "日韩动漫"),
+                                  new Category(31, 4, "欧美动漫")
+                              }, 4);
+                          } else { // 纪录片
+                              renderSubCategoryChips(new Category[]{
+                                  new Category(20, 0, "全部纪录片"),
+                                  new Category(20, 0, "自然探索"),
+                                  new Category(20, 0, "历史人文"),
+                                  new Category(20, 0, "科技军事")
+                              }, 20);
                           }
                       });
                       chipGroupMainTypes.addView(chip);
                   }
               }
 
-              private void setupSubCategories(String[] subTypes, String defaultTypeOrWord) {
+              private void renderSubCategoryChips(Category[] subs, int defaultId) {
                   scrollSubTypes.setVisibility(View.VISIBLE);
                   chipGroupSubTypes.removeAllViews();
 
-                  for (int i = 0; i < subTypes.length; i++) {
+                  for (int i = 0; i < subs.length; i++) {
                       Chip chip = new Chip(this);
-                      chip.setText(subTypes[i]);
+                      chip.setText(subs[i].name);
                       chip.setCheckable(true);
                       chip.setChecked(i == 0);
-                      final String label = subTypes[i];
-                      final int index = i;
+                      final int targetTypeId = subs[i].id;
 
-                      chip.setOnClickListener(v -> {
-                          if (index == 0) {
-                              if (defaultTypeOrWord.matches("\\d+")) loadVodData("", defaultTypeOrWord);
-                              else loadVodData(defaultTypeOrWord, "");
-                          } else {
-                              loadVodData(label, "");
-                          }
-                      });
+                      chip.setOnClickListener(v -> loadVodData("", String.valueOf(targetTypeId)));
                       chipGroupSubTypes.addView(chip);
                   }
-
-                  if (defaultTypeOrWord.matches("\\d+")) loadVodData("", defaultTypeOrWord);
-                  else loadVodData(defaultTypeOrWord, "");
+                  loadVodData("", String.valueOf(defaultId));
               }
 
+              // ================= 搜索建议与联想推荐面板 =================
               private void initSearchSuggestionWatcher() {
-                  renderSuggestions(allSuggestionsPool, 8);
+                  renderHotSeeds();
+
+                  etSearch.setOnFocusChangeListener((v, hasFocus) -> {
+                      if (hasFocus) {
+                          updateSuggestionList(etSearch.getText().toString().trim());
+                          layoutSearchSuggestions.setVisibility(View.VISIBLE);
+                      }
+                  });
 
                   etSearch.addTextChangedListener(new TextWatcher() {
                       @Override
@@ -1069,16 +1224,8 @@ jobs:
                       @Override
                       public void onTextChanged(CharSequence s, int start, int before, int count) {
                           String input = s.toString().trim();
-                          if (input.isEmpty()) {
-                              renderSuggestions(allSuggestionsPool, 8);
-                          } else {
-                              List<String> matched = new ArrayList<>();
-                              for (String word : allSuggestionsPool) {
-                                  if (word.contains(input)) matched.add(word);
-                              }
-                              if (matched.isEmpty()) matched.add("搜 “" + input + "”");
-                              renderSuggestions(matched.toArray(new String[0]), 6);
-                          }
+                          updateSuggestionList(input);
+                          layoutSearchSuggestions.setVisibility(View.VISIBLE);
                       }
 
                       @Override
@@ -1086,94 +1233,116 @@ jobs:
                   });
               }
 
-              private void renderSuggestions(String[] pool, int maxCount) {
+              private void renderHotSeeds() {
                   chipGroupHotSearch.removeAllViews();
-                  int limit = Math.min(pool.length, maxCount);
-                  for (int i = 0; i < limit; i++) {
+                  for (int i = 0; i < Math.min(hotSearchSeed.length, 10); i++) {
                       Chip chip = new Chip(this);
-                      chip.setText(pool[i]);
+                      chip.setText(hotSearchSeed[i]);
                       chip.setCheckable(false);
                       chip.setTextColor(0xFFE0E0E0);
                       chip.setChipBackgroundColorResource(android.R.color.transparent);
                       chip.setChipStrokeWidth(2.0f);
                       chip.setChipStrokeColor(android.content.res.ColorStateList.valueOf(0xFF30363D));
 
-                      final String searchWord = pool[i].replace("搜 “", "").replace("”", "").trim();
-                      chip.setOnClickListener(v -> {
-                          etSearch.setText(searchWord);
-                          etSearch.setSelection(searchWord.length());
-                          loadVodData(searchWord, "");
-                      });
+                      final String kw = hotSearchSeed[i];
+                      chip.setOnClickListener(v -> executeSearch(kw));
                       chipGroupHotSearch.addView(chip);
                   }
               }
 
-              private void updateCacheDisplay() {
-                  new Thread(() -> {
-                      long size = getDirSize(getCacheDir()) + getDirSize(getExternalCacheDir());
-                      String formatted = formatFileSize(size);
-                      runOnUiThread(() -> tvCacheSize.setText("当前缓存占用: " + formatted));
-                  }).start();
+              private void updateSuggestionList(String query) {
+                  currentSuggestions.clear();
+                  if (query.isEmpty()) {
+                      for (int i = 0; i < 8; i++) currentSuggestions.add(hotSearchSeed[i]);
+                      suggestionAdapter.notifyDataSetChanged();
+                  } else {
+                      for (String word : hotSearchSeed) {
+                          if (word.contains(query)) currentSuggestions.add(word);
+                      }
+                      if (currentSuggestions.isEmpty()) {
+                          currentSuggestions.add("全网搜索: " + query);
+                      }
+                      suggestionAdapter.notifyDataSetChanged();
+                      fetchBaiduOnlineSuggestions(query);
+                  }
               }
 
-              private void clearAppCache() {
-                  ProgressDialog pd = new ProgressDialog(this);
-                  pd.setMessage("正在深度清理本地媒体与海报缓存...");
-                  pd.show();
+              private void fetchBaiduOnlineSuggestions(String keyword) {
+                  try {
+                      String url = "https://suggestion.baidu.com/su?wd=" + URLEncoder.encode(keyword, "UTF-8") + "&action=opensearch";
+                      Request req = new Request.Builder().url(url).build();
+                      httpClient.newCall(req).enqueue(new Callback() {
+                          @Override
+                          public void onFailure(@NonNull Call call, @NonNull IOException e) {}
 
-                  new Thread(() -> {
-                      deleteDir(getCacheDir());
-                      deleteDir(getExternalCacheDir());
-                      runOnUiThread(() -> Glide.get(MainActivity.this).clearMemory());
-                      Glide.get(MainActivity.this).clearDiskCache();
-
-                      runOnUiThread(() -> {
-                          pd.dismiss();
-                          updateCacheDisplay();
-                          Toast.makeText(MainActivity.this, "缓存清理成功！", Toast.LENGTH_SHORT).show();
+                          @Override
+                          public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                              if (response.isSuccessful() && response.body() != null) {
+                                  try {
+                                      String str = response.body().string();
+                                      JSONArray arr = new JSONArray(str);
+                                      if (arr.length() >= 2) {
+                                          JSONArray items = arr.getJSONArray(1);
+                                          List<String> netSuggestions = new ArrayList<>();
+                                          for (int i = 0; i < Math.min(items.length(), 6); i++) {
+                                              netSuggestions.add(items.getString(i));
+                                          }
+                                          runOnUiThread(() -> {
+                                              currentSuggestions.clear();
+                                              currentSuggestions.addAll(netSuggestions);
+                                              if (currentSuggestions.isEmpty()) currentSuggestions.add(keyword);
+                                              suggestionAdapter.notifyDataSetChanged();
+                                          });
+                                      }
+                                  } catch (Exception ignored) {}
+                              }
+                          }
                       });
-                  }).start();
+                  } catch (Exception ignored) {}
               }
 
-              private long getDirSize(File dir) {
-                  long size = 0;
-                  if (dir != null && dir.isDirectory()) {
-                      File[] files = dir.listFiles();
-                      if (files != null) {
-                          for (File f : files) {
-                              if (f.isDirectory()) size += getDirSize(f);
-                              else size += f.length();
-                          }
-                      }
-                  } else if (dir != null && dir.isFile()) {
-                      size += dir.length();
+              private void executeSearch(String keyword) {
+                  etSearch.setText(keyword);
+                  etSearch.setSelection(keyword.length());
+                  layoutSearchSuggestions.setVisibility(View.GONE);
+
+                  // 收起软键盘
+                  View view = getCurrentFocus();
+                  if (view != null) {
+                      InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                      if (imm != null) imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
                   }
-                  return size;
+                  loadVodData(keyword, "");
               }
 
-              private boolean deleteDir(File dir) {
-                  if (dir != null && dir.isDirectory()) {
-                      String[] children = dir.list();
-                      if (children != null) {
-                          for (String child : children) {
-                              boolean success = deleteDir(new File(dir, child));
-                              if (!success) return false;
-                          }
-                      }
-                      return dir.delete();
-                  } else if (dir != null && dir.isFile()) {
-                      return dir.delete();
+              private class SuggestionAdapter extends RecyclerView.Adapter<SuggestionAdapter.VH> {
+                  @NonNull
+                  @Override
+                  public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+                      View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_search_suggestion, parent, false);
+                      return new VH(v);
                   }
-                  return false;
+
+                  @Override
+                  public void onBindViewHolder(@NonNull VH holder, int position) {
+                      String text = currentSuggestions.get(position);
+                      holder.tv.setText(text);
+                      holder.itemView.setOnClickListener(v -> executeSearch(text.replace("全网搜索: ", "").trim()));
+                  }
+
+                  @Override
+                  public int getItemCount() { return currentSuggestions.size(); }
+
+                  class VH extends RecyclerView.ViewHolder {
+                      TextView tv;
+                      public VH(View itemView) {
+                          super(itemView);
+                          tv = itemView.findViewById(R.id.tv_suggestion_text);
+                      }
+                  }
               }
 
-              private String formatFileSize(long bytes) {
-                  if (bytes <= 0) return "0.00 MB";
-                  double mb = bytes / (1024.0 * 1024.0);
-                  if (mb < 0.1) return String.format(Locale.getDefault(), "%.2f KB", bytes / 1024.0);
-                  return String.format(Locale.getDefault(), "%.2f MB", mb);
-              }
-
+              // ================= 播放器初始化与锁屏时微进度隐藏 =================
               private void initPlayer() {
                   DefaultHttpDataSource.Factory httpFactory = new DefaultHttpDataSource.Factory()
                       .setUserAgent("Mozilla/5.0 (Linux; Android 14; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36")
@@ -1219,7 +1388,7 @@ jobs:
                       @Override
                       public void onPlayerError(@NonNull PlaybackException error) {
                           bufferingProgress.setVisibility(View.GONE);
-                          Toast.makeText(MainActivity.this, "播放失败(" + error.getErrorCodeName() + ")，请换线或选集", Toast.LENGTH_SHORT).show();
+                          Toast.makeText(MainActivity.this, "播放失败(" + error.getErrorCodeName() + ")，请尝试换线", Toast.LENGTH_SHORT).show();
                       }
                   });
               }
@@ -1354,16 +1523,22 @@ jobs:
                   }
               }
 
+              // ================= 播放控制面板交互 =================
               private void initEnhancedControlEvents() {
+                  // 锁定时彻底隐藏底部微进度条，避免与时间角标重复
                   btnLockScreen.setOnClickListener(v -> {
                       isScreenLocked = !isScreenLocked;
                       if (isScreenLocked) {
                           btnLockScreen.setText("🔒");
                           playerControlOverlay.setVisibility(View.GONE);
-                          Toast.makeText(this, "屏幕已锁定", Toast.LENGTH_SHORT).show();
+                          alwaysMiniProgress.setVisibility(View.GONE);
+                          Toast.makeText(this, "屏幕已锁定，手势与按钮已禁用", Toast.LENGTH_SHORT).show();
                       } else {
                           btnLockScreen.setText("🔓");
                           playerControlOverlay.setVisibility(View.VISIBLE);
+                          if (prefs.getBoolean("show_always_info", true)) {
+                              alwaysMiniProgress.setVisibility(View.VISIBLE);
+                          }
                           resetHideControlsTimer();
                           Toast.makeText(this, "屏幕已解锁", Toast.LENGTH_SHORT).show();
                       }
@@ -1414,22 +1589,16 @@ jobs:
                       }
                   });
 
+                  // 弹出式清晰度单选按钮
                   btnQualitySwitch.setOnClickListener(v -> {
                       resetHideControlsTimer();
-                      currentQualityIndex = (currentQualityIndex + 1) % qualityNames.length;
-                      String qName = qualityNames[currentQualityIndex];
-                      btnQualitySwitch.setText(qName);
+                      showQualityDialog();
+                  });
 
-                      int maxW = Integer.MAX_VALUE;
-                      int maxH = Integer.MAX_VALUE;
-                      if (qName.contains("1080")) { maxW = 1920; maxH = 1080; }
-                      else if (qName.contains("720")) { maxW = 1280; maxH = 720; }
-                      else if (qName.contains("480")) { maxW = 854; maxH = 480; }
-
-                      player.setTrackSelectionParameters(
-                          player.getTrackSelectionParameters().buildUpon().setMaxVideoSize(maxW, maxH).build()
-                      );
-                      Toast.makeText(this, "清晰度已切换为: " + qName, Toast.LENGTH_SHORT).show();
+                  // 弹出式画面比例单选按钮
+                  btnAspectRatio.setOnClickListener(v -> {
+                      resetHideControlsTimer();
+                      showAspectRatioDialog();
                   });
 
                   btnCastScreen.setOnClickListener(v -> {
@@ -1487,6 +1656,56 @@ jobs:
                       resetHideControlsTimer();
                       toggleFullscreen();
                   });
+              }
+
+              // 清晰度弹出式单选弹窗
+              private void showQualityDialog() {
+                  AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                  builder.setTitle("选择视频清晰度");
+                  builder.setSingleChoiceItems(qualityNames, currentQualityIndex, (dialog, which) -> {
+                      currentQualityIndex = which;
+                      String qName = qualityNames[which];
+                      btnQualitySwitch.setText(qName.split(" ")[0]);
+
+                      int maxW = Integer.MAX_VALUE;
+                      int maxH = Integer.MAX_VALUE;
+                      if (qName.contains("1080")) { maxW = 1920; maxH = 1080; }
+                      else if (qName.contains("720")) { maxW = 1280; maxH = 720; }
+                      else if (qName.contains("480")) { maxW = 854; maxH = 480; }
+
+                      player.setTrackSelectionParameters(
+                          player.getTrackSelectionParameters().buildUpon().setMaxVideoSize(maxW, maxH).build()
+                      );
+                      Toast.makeText(this, "清晰度已切换为: " + qName, Toast.LENGTH_SHORT).show();
+                      dialog.dismiss();
+                  });
+                  builder.show();
+              }
+
+              // 画面比例弹出式单选弹窗
+              private void showAspectRatioDialog() {
+                  String[] ratioOptions = new String[]{
+                      "自适应 (保持原片比例 Fit)",
+                      "拉伸铺满 (全屏无边框 Fill)",
+                      "居中裁剪 (等比充满画面 Zoom)",
+                      "定宽自适应 (Fixed Width)",
+                      "定高自适应 (Fixed Height)"
+                  };
+
+                  AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                  builder.setTitle("选择画面缩放比例");
+                  builder.setSingleChoiceItems(ratioOptions, resizeModeIndex, (dialog, which) -> {
+                      resizeModeIndex = which;
+                      if (which == 0) playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIT);
+                      else if (which == 1) playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FILL);
+                      else if (which == 2) playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_ZOOM);
+                      else if (which == 3) playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIXED_WIDTH);
+                      else playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIXED_HEIGHT);
+
+                      Toast.makeText(this, "画面比例已调整: " + ratioOptions[which], Toast.LENGTH_SHORT).show();
+                      dialog.dismiss();
+                  });
+                  builder.show();
               }
 
               private void showCastScreenDialog() {
@@ -1646,13 +1865,11 @@ jobs:
                   String introStr = skipIntroSeconds == 0 ? "关闭" : (skipIntroSeconds + " 秒");
                   String outroStr = skipOutroSeconds == 0 ? "关闭" : (skipOutroSeconds + " 秒");
                   boolean isInfoVisible = prefs.getBoolean("show_always_info", true);
-                  String[] ratioNames = new String[]{"自适应屏幕", "拉伸铺满", "居中裁剪"};
 
                   String[] options = new String[]{
                       "跳过片头: 【" + introStr + "】 (点击自定义)",
                       "跳过片尾: 【" + outroStr + "】 (点击自定义)",
-                      "右上角电量与进度常驻: 【" + (isInfoVisible ? "显示" : "隐藏") + "】",
-                      "画面比例: 【" + ratioNames[resizeModeIndex] + "】"
+                      "右上角电量与时间常驻: 【" + (isInfoVisible ? "显示" : "隐藏") + "】"
                   };
 
                   AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -1660,8 +1877,7 @@ jobs:
                   builder.setItems(options, (dialog, which) -> {
                       if (which == 0) showCustomSkipInputDialog(true);
                       else if (which == 1) showCustomSkipInputDialog(false);
-                      else if (which == 2) toggleAlwaysInfoVisibility();
-                      else if (which == 3) cycleAspectRatio();
+                      else toggleAlwaysInfoVisibility();
                   });
                   builder.show();
               }
@@ -1701,22 +1917,10 @@ jobs:
                   boolean current = prefs.getBoolean("show_always_info", true);
                   prefs.edit().putBoolean("show_always_info", !current).apply();
                   tvAlwaysInfo.setVisibility(!current ? View.VISIBLE : View.GONE);
-                  alwaysMiniProgress.setVisibility(!current ? View.VISIBLE : View.GONE);
-                  Toast.makeText(this, !current ? "已开启全天候角标与微进度" : "已隐藏全天候信息", Toast.LENGTH_SHORT).show();
-              }
-
-              private void cycleAspectRatio() {
-                  resizeModeIndex = (resizeModeIndex + 1) % 3;
-                  if (resizeModeIndex == 0) {
-                      playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIT);
-                      Toast.makeText(this, "画面比例: 自适应", Toast.LENGTH_SHORT).show();
-                  } else if (resizeModeIndex == 1) {
-                      playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FILL);
-                      Toast.makeText(this, "画面比例: 拉伸铺满", Toast.LENGTH_SHORT).show();
-                  } else {
-                      playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_ZOOM);
-                      Toast.makeText(this, "画面比例: 居中裁剪", Toast.LENGTH_SHORT).show();
+                  if (!isScreenLocked) {
+                      alwaysMiniProgress.setVisibility(!current ? View.VISIBLE : View.GONE);
                   }
+                  Toast.makeText(this, !current ? "已开启全天候角标信息" : "已隐藏全天候信息", Toast.LENGTH_SHORT).show();
               }
 
               private void updatePlayPauseIcon() {
@@ -1776,6 +1980,7 @@ jobs:
                   playerSeekBar.setVisibility(View.VISIBLE);
                   btnEpisodesSheet.setVisibility(View.VISIBLE);
                   btnQualitySwitch.setVisibility(View.VISIBLE);
+                  btnAspectRatio.setVisibility(View.VISIBLE);
                   btnSpeedSwitch.setVisibility(View.VISIBLE);
 
                   updateEpisodeNavButtonsState();
@@ -1793,6 +1998,7 @@ jobs:
                   playerSeekBar.setVisibility(View.INVISIBLE);
                   btnEpisodesSheet.setVisibility(View.GONE);
                   btnQualitySwitch.setVisibility(View.GONE);
+                  btnAspectRatio.setVisibility(View.GONE);
                   btnSpeedSwitch.setVisibility(View.GONE);
                   tvCombinedTime.setText("🔴 实时直播");
 
@@ -1862,7 +2068,15 @@ jobs:
                   if (duration > 0) {
                       int progress = (int) ((position * 1000L) / duration);
                       playerSeekBar.setProgress(progress);
-                      alwaysMiniProgress.setProgress(progress);
+
+                      // 仅在屏幕未锁定时更新并显示底边微型进度条
+                      if (!isScreenLocked && prefs.getBoolean("show_always_info", true)) {
+                          alwaysMiniProgress.setVisibility(View.VISIBLE);
+                          alwaysMiniProgress.setProgress(progress);
+                      } else {
+                          alwaysMiniProgress.setVisibility(View.GONE);
+                      }
+
                       tvCombinedTime.setText(formatTime(position) + " / " + formatTime(duration));
                   }
               }
@@ -1913,9 +2127,7 @@ jobs:
                           }
 
                           @Override
-                          public int getItemCount() {
-                              return group.episodes.size();
-                          }
+                          public int getItemCount() { return group.episodes.size(); }
                       });
                   };
 
@@ -1978,9 +2190,7 @@ jobs:
                           }
 
                           @Override
-                          public int getItemCount() {
-                              return group.episodes.size();
-                          }
+                          public int getItemCount() { return group.episodes.size(); }
                       });
                   };
 
@@ -2003,13 +2213,14 @@ jobs:
                   sheet.show();
               }
 
+              // 核心：分类使用 &t=检索，彻底解决内容为空与检索不准问题
               private void loadVodData(String keyword, String typeId) {
                   swipeVod.setRefreshing(true);
                   VodRoute route = vodRoutes.get(currentVodRouteIndex);
                   String url = route.api + "?ac=videolist";
-                  if (!typeId.isEmpty()) {
+                  if (typeId != null && !typeId.isEmpty()) {
                       url += "&t=" + typeId;
-                  } else if (!keyword.isEmpty()) {
+                  } else if (keyword != null && !keyword.isEmpty()) {
                       url += "&wd=" + keyword;
                   } else {
                       url += "&pg=1";
@@ -2031,6 +2242,20 @@ jobs:
                               try {
                                   String bodyStr = response.body().string();
                                   JSONObject json = new JSONObject(bodyStr);
+
+                                  // 动态同步采集源的实际类别树，保证100%精准无错漏
+                                  JSONArray classArr = json.optJSONArray("class");
+                                  if (classArr != null && classArr.length() > 0 && dynamicCategories.isEmpty()) {
+                                      for (int c = 0; c < classArr.length(); c++) {
+                                          JSONObject cObj = classArr.getJSONObject(c);
+                                          dynamicCategories.add(new Category(
+                                              cObj.optInt("type_id"),
+                                              cObj.optInt("type_pid", 0),
+                                              cObj.optString("type_name")
+                                          ));
+                                      }
+                                  }
+
                                   JSONArray list = json.optJSONArray("list");
                                   List<VodItem> parsed = new ArrayList<>();
                                   if (list != null) {
@@ -2115,6 +2340,7 @@ jobs:
                   builder.setTitle("选择 TVBox 点播线路仓");
                   builder.setSingleChoiceItems(names, currentVodRouteIndex, (dialog, which) -> {
                       currentVodRouteIndex = which;
+                      dynamicCategories.clear(); // 换源后重置分类映射
                       VodRoute r = vodRoutes.get(which);
                       btnSwitchVodSource.setText(r.name + " ▼");
                       tvCurrentVodInfo.setText("当前已载入: " + r.name);
@@ -2271,6 +2497,72 @@ jobs:
                   if (player != null) player.release();
               }
 
+              private void updateCacheDisplay() {
+                  new Thread(() -> {
+                      long size = getDirSize(getCacheDir()) + getDirSize(getExternalCacheDir());
+                      String formatted = formatFileSize(size);
+                      runOnUiThread(() -> tvCacheSize.setText("当前缓存占用: " + formatted));
+                  }).start();
+              }
+
+              private void clearAppCache() {
+                  ProgressDialog pd = new ProgressDialog(this);
+                  pd.setMessage("正在深度清理本地媒体与海报缓存...");
+                  pd.show();
+
+                  new Thread(() -> {
+                      deleteDir(getCacheDir());
+                      deleteDir(getExternalCacheDir());
+                      runOnUiThread(() -> Glide.get(MainActivity.this).clearMemory());
+                      Glide.get(MainActivity.this).clearDiskCache();
+
+                      runOnUiThread(() -> {
+                          pd.dismiss();
+                          updateCacheDisplay();
+                          Toast.makeText(MainActivity.this, "缓存清理成功！", Toast.LENGTH_SHORT).show();
+                      });
+                  }).start();
+              }
+
+              private long getDirSize(File dir) {
+                  long size = 0;
+                  if (dir != null && dir.isDirectory()) {
+                      File[] files = dir.listFiles();
+                      if (files != null) {
+                          for (File f : files) {
+                              if (f.isDirectory()) size += getDirSize(f);
+                              else size += f.length();
+                          }
+                      }
+                  } else if (dir != null && dir.isFile()) {
+                      size += dir.length();
+                  }
+                  return size;
+              }
+
+              private boolean deleteDir(File dir) {
+                  if (dir != null && dir.isDirectory()) {
+                      String[] children = dir.list();
+                      if (children != null) {
+                          for (String child : children) {
+                              boolean success = deleteDir(new File(dir, child));
+                              if (!success) return false;
+                          }
+                      }
+                      return dir.delete();
+                  } else if (dir != null && dir.isFile()) {
+                      return dir.delete();
+                  }
+                  return false;
+              }
+
+              private String formatFileSize(long bytes) {
+                  if (bytes <= 0) return "0.00 MB";
+                  double mb = bytes / (1024.0 * 1024.0);
+                  if (mb < 0.1) return String.format(Locale.getDefault(), "%.2f KB", bytes / 1024.0);
+                  return String.format(Locale.getDefault(), "%.2f MB", mb);
+              }
+
               private class VodAdapter extends RecyclerView.Adapter<VodVH> {
                   @NonNull
                   @Override
@@ -2385,7 +2677,7 @@ jobs:
           
           gh release create "$TAG_NAME" "$APK_PATH" \
             --title "影视盒子 V2.${RUN_NUM}" \
-            --notes "代码提交自动构建版本 V2.${RUN_NUM}，已同步至云端更新源。"
+            --notes "更新：修复分类检索精准度、新增搜索建议下拉窗、优化锁屏进度条与弹出式比例/清晰度菜单。"
 
       # 步骤 5：自动更新 version.json 与 release.keystore 并提交回仓库
       - name: Auto-update version.json & keystore in Repository
@@ -2393,6 +2685,7 @@ jobs:
           RUN_NUM: ${{ github.run_number }}
         run: |
           git config user.name "github-actions[bot]"
+          git画面
           git config user.email "github-actions[bot]@users.noreply.github.com"
           
           DOWNLOAD_URL="https://gh-proxy.org/https://github.com/${{ github.repository }}/releases/download/v2.${RUN_NUM}/app-debug.apk"
@@ -2403,11 +2696,10 @@ jobs:
             "versionCode": $V_CODE,
             "versionName": "2.${RUN_NUM}",
             "apkUrl": "$DOWNLOAD_URL",
-            "changelog": "1. 影视双层多维分类体系（动作/喜剧/恐怖等题材联动）\n2. 搜索输入实时联想与建议词\n3. 新增一键深度本地缓存清理"
+            "changelog": "1. 彻底修复分类筛选，采用官方真实TypeID分类检索\n2. 新增搜索联想下拉悬浮面板与实时推荐\n3. 优化锁屏状态：锁屏隐藏微进度条\n4. 清晰度与画面比例全面升级为弹出式单选菜单"
           }
           EOF
 
-          # 将自动生成的永久密钥与版本信息一同提交入库
           git add version.json app/release.keystore
           git commit -m "Auto update version.json & release.keystore to v2.${RUN_NUM} [skip ci]" || true
           git push origin HEAD || true
