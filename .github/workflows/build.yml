@@ -1,5 +1,4 @@
 name: Build and Auto Release Mobile TVBox
-
 on:
   push:
     branches: [ "**" ]
@@ -8,10 +7,8 @@ on:
       - 'README.md'
       - 'app/release.keystore'
   workflow_dispatch:
-
 permissions:
   contents: write
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -92,19 +89,16 @@ jobs:
           plugins {
               id 'com.android.application'
           }
-
           android {
               namespace 'com.mobile.tvbox'
               compileSdk 34
-
               defaultConfig {
                   applicationId "com.mobile.tvbox"
                   minSdk 24
                   targetSdk 34
-                  versionCode $((1000 + RUN_NUM))
+                  versionCode $((100 + RUN_NUM))
                   versionName "2.${RUN_NUM}"
               }
-
               signingConfigs {
                   release {
                       storeFile file('release.keystore')
@@ -113,7 +107,6 @@ jobs:
                       keyPassword 'tvbox123456'
                   }
               }
-
               buildTypes {
                   debug {
                       signingConfig signingConfigs.release
@@ -123,18 +116,15 @@ jobs:
                       signingConfig signingConfigs.release
                   }
               }
-
               lint {
                   abortOnError false
                   checkReleaseBuilds false
               }
-
               compileOptions {
                   sourceCompatibility JavaVersion.VERSION_17
                   targetCompatibility JavaVersion.VERSION_17
               }
           }
-
           dependencies {
               implementation 'androidx.appcompat:appcompat:1.6.1'
               implementation 'com.google.android.material:material:1.11.0'
@@ -153,6 +143,7 @@ jobs:
           <paths>
               <external-files-path name="apk_downloads" path="." />
               <external-path name="external_storage_root" path="." />
+              <external-files-path name="update" path="update/" />
           </paths>
           EOF
 
@@ -331,18 +322,15 @@ jobs:
               android:layout_height="wrap_content"
               android:orientation="vertical"
               android:padding="4dp">
-
               <FrameLayout
                   android:layout_width="match_parent"
                   android:layout_height="150dp">
-
                   <ImageView
                       android:id="@+id/iv_vod_poster"
                       android:layout_width="match_parent"
                       android:layout_height="match_parent"
                       android:scaleType="centerCrop"
                       android:background="@drawable/bg_poster_placeholder"/>
-
                   <TextView
                       android:id="@+id/tv_vod_score"
                       android:layout_width="wrap_content"
@@ -359,7 +347,6 @@ jobs:
                       android:textStyle="bold"
                       android:text="评分: 7.8"/>
               </FrameLayout>
-
               <TextView
                   android:id="@+id/tv_vod_title"
                   android:layout_width="match_parent"
@@ -384,21 +371,18 @@ jobs:
               android:padding="8dp"
               android:layout_marginBottom="6dp"
               android:background="@drawable/bg_card_white">
-
               <ImageView
                   android:id="@+id/iv_thumb"
                   android:layout_width="50dp"
                   android:layout_height="match_parent"
                   android:scaleType="centerCrop"
                   android:background="@drawable/bg_poster_placeholder"/>
-
               <LinearLayout
                   android:layout_width="0dp"
                   android:layout_height="wrap_content"
                   android:layout_weight="1"
                   android:layout_marginStart="10dp"
                   android:orientation="vertical">
-
                   <TextView
                       android:id="@+id/tv_title"
                       android:layout_width="wrap_content"
@@ -408,7 +392,6 @@ jobs:
                       android:textStyle="bold"
                       android:singleLine="true"
                       android:text="影片标题"/>
-
                   <TextView
                       android:id="@+id/tv_desc"
                       android:layout_width="wrap_content"
@@ -418,7 +401,6 @@ jobs:
                       android:textSize="11sp"
                       android:text="观看至 12:45"/>
               </LinearLayout>
-
               <TextView
                   android:id="@+id/btn_action"
                   android:layout_width="wrap_content"
@@ -509,21 +491,18 @@ jobs:
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:background="@color/bg_light">
-
               <!-- 主内容容器（三大独立Tab界面） -->
               <FrameLayout
                   android:id="@+id/content_container"
                   android:layout_width="match_parent"
                   android:layout_height="match_parent"
                   android:layout_above="@id/bottom_nav">
-
                   <!-- 页面 1：首页海报流 -->
                   <LinearLayout
                       android:id="@+id/layout_vod"
                       android:layout_width="match_parent"
                       android:layout_height="match_parent"
                       android:orientation="vertical">
-
                       <LinearLayout
                           android:layout_width="match_parent"
                           android:layout_height="48dp"
@@ -532,7 +511,6 @@ jobs:
                           android:paddingStart="12dp"
                           android:paddingEnd="12dp"
                           android:background="#FFFFFF">
-
                           <TextView
                               android:id="@+id/btn_switch_vod_source"
                               android:layout_width="wrap_content"
@@ -541,7 +519,6 @@ jobs:
                               android:textSize="13sp"
                               android:textStyle="bold"
                               android:textColor="#333333"/>
-
                           <EditText
                               android:id="@+id/et_search"
                               android:layout_width="0dp"
@@ -558,7 +535,6 @@ jobs:
                               android:textSize="12sp"
                               android:imeOptions="actionSearch"
                               android:inputType="text"/>
-
                           <TextView
                               android:id="@+id/btn_home_history"
                               android:layout_width="30dp"
@@ -567,7 +543,6 @@ jobs:
                               android:text="🕒"
                               android:textSize="16sp"/>
                       </LinearLayout>
-
                       <HorizontalScrollView
                           android:layout_width="match_parent"
                           android:layout_height="40dp"
@@ -575,14 +550,12 @@ jobs:
                           android:background="#FFFFFF"
                           android:paddingStart="8dp"
                           android:paddingEnd="8dp">
-
                           <com.google.android.material.chip.ChipGroup
                               android:id="@+id/chip_group_main_types"
                               android:layout_width="wrap_content"
                               android:layout_height="match_parent"
                               app:singleSelection="true"/>
                       </HorizontalScrollView>
-
                       <!-- 4 行筛选矩阵 -->
                       <LinearLayout
                           android:layout_width="match_parent"
@@ -590,30 +563,24 @@ jobs:
                           android:orientation="vertical"
                           android:background="#FFFFFF"
                           android:paddingBottom="6dp">
-
                           <HorizontalScrollView android:layout_width="match_parent" android:layout_height="32dp" android:scrollbars="none" android:paddingStart="8dp" android:paddingEnd="8dp">
                               <com.google.android.material.chip.ChipGroup android:id="@+id/chip_group_row1_type" android:layout_width="wrap_content" android:layout_height="match_parent" app:singleSelection="true"/>
                           </HorizontalScrollView>
-
                           <HorizontalScrollView android:layout_width="match_parent" android:layout_height="32dp" android:layout_marginTop="3dp" android:scrollbars="none" android:paddingStart="8dp" android:paddingEnd="8dp">
                               <com.google.android.material.chip.ChipGroup android:id="@+id/chip_group_row2_area" android:layout_width="wrap_content" android:layout_height="match_parent" app:singleSelection="true"/>
                           </HorizontalScrollView>
-
                           <HorizontalScrollView android:layout_width="match_parent" android:layout_height="32dp" android:layout_marginTop="3dp" android:scrollbars="none" android:paddingStart="8dp" android:paddingEnd="8dp">
                               <com.google.android.material.chip.ChipGroup android:id="@+id/chip_group_row3_sort" android:layout_width="wrap_content" android:layout_height="match_parent" app:singleSelection="true"/>
                           </HorizontalScrollView>
-
                           <HorizontalScrollView android:layout_width="match_parent" android:layout_height="32dp" android:layout_marginTop="3dp" android:scrollbars="none" android:paddingStart="8dp" android:paddingEnd="8dp">
                               <com.google.android.material.chip.ChipGroup android:id="@+id/chip_group_row4_year" android:layout_width="wrap_content" android:layout_height="match_parent" app:singleSelection="true"/>
                           </HorizontalScrollView>
                       </LinearLayout>
-
                       <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
                           android:id="@+id/swipe_vod"
                           android:layout_width="match_parent"
                           android:layout_height="match_parent"
                           android:layout_marginTop="4dp">
-
                           <androidx.recyclerview.widget.RecyclerView
                               android:id="@+id/recycler_vod"
                               android:layout_width="match_parent"
@@ -621,7 +588,6 @@ jobs:
                               android:padding="4dp"/>
                       </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
                   </LinearLayout>
-
                   <!-- 页面 2：电视直播 -->
                   <LinearLayout
                       android:id="@+id/layout_live"
@@ -629,7 +595,6 @@ jobs:
                       android:layout_height="match_parent"
                       android:orientation="vertical"
                       android:visibility="gone">
-
                       <LinearLayout
                           android:layout_width="match_parent"
                           android:layout_height="48dp"
@@ -645,14 +610,12 @@ jobs:
                           </com.google.android.material.chip.ChipGroup>
                           <Button android:id="@+id/btn_update_live_source" android:layout_width="wrap_content" android:layout_height="34dp" android:text="更新源" android:textSize="11sp" android:textColor="@color/white" android:backgroundTint="@color/primary_blue"/>
                       </LinearLayout>
-
                       <androidx.recyclerview.widget.RecyclerView
                           android:id="@+id/recycler_live"
                           android:layout_width="match_parent"
                           android:layout_height="match_parent"
                           android:padding="6dp"/>
                   </LinearLayout>
-
                   <!-- 页面 3：“我的”个人中心 -->
                   <ScrollView
                       android:id="@+id/layout_mine"
@@ -660,24 +623,20 @@ jobs:
                       android:layout_height="match_parent"
                       android:background="@color/bg_light"
                       android:visibility="gone">
-
                       <LinearLayout
                           android:layout_width="match_parent"
                           android:layout_height="wrap_content"
                           android:orientation="vertical">
-
                           <FrameLayout
                               android:layout_width="match_parent"
                               android:layout_height="140dp"
                               android:background="@drawable/bg_profile_header">
-
                               <ImageView
                                   android:layout_width="68dp"
                                   android:layout_height="68dp"
                                   android:layout_gravity="center"
                                   android:background="@drawable/bg_avatar_circle"/>
                           </FrameLayout>
-
                           <LinearLayout
                               android:layout_width="match_parent"
                               android:layout_height="76dp"
@@ -687,7 +646,6 @@ jobs:
                               android:orientation="horizontal"
                               android:gravity="center"
                               android:background="@drawable/bg_card_white">
-
                               <LinearLayout
                                   android:id="@+id/btn_mine_favorites"
                                   android:layout_width="0dp"
@@ -698,7 +656,6 @@ jobs:
                                   <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="★" android:textColor="@color/accent_purple" android:textSize="20sp"/>
                                   <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="我的收藏" android:textColor="#333333" android:textSize="11sp"/>
                               </LinearLayout>
-
                               <LinearLayout
                                   android:id="@+id/btn_mine_history"
                                   android:layout_width="0dp"
@@ -709,7 +666,6 @@ jobs:
                                   <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="🕒" android:textSize="18sp"/>
                                   <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="历史记录" android:textColor="#333333" android:textSize="11sp"/>
                               </LinearLayout>
-
                               <LinearLayout
                                   android:id="@+id/btn_mine_cast"
                                   android:layout_width="0dp"
@@ -721,7 +677,6 @@ jobs:
                                   <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="投屏管理" android:textColor="#333333" android:textSize="11sp"/>
                               </LinearLayout>
                           </LinearLayout>
-
                           <LinearLayout
                               android:layout_width="match_parent"
                               android:layout_height="wrap_content"
@@ -730,25 +685,21 @@ jobs:
                               android:background="@drawable/bg_card_white"
                               android:paddingStart="16dp"
                               android:paddingEnd="16dp">
-
                               <RelativeLayout android:id="@+id/btn_item_route_manage" android:layout_width="match_parent" android:layout_height="48dp">
                                   <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_centerVertical="true" android:text="订阅线路管理" android:textColor="#212121" android:textSize="13sp"/>
                                   <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentEnd="true" android:layout_centerVertical="true" android:text=">" android:textColor="#BDBDBD"/>
                               </RelativeLayout>
                               <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F0F0"/>
-
                               <RelativeLayout android:id="@+id/btn_item_live_manage" android:layout_width="match_parent" android:layout_height="48dp">
                                   <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_centerVertical="true" android:text="直播源订阅" android:textColor="#212121" android:textSize="13sp"/>
                                   <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentEnd="true" android:layout_centerVertical="true" android:text=">" android:textColor="#BDBDBD"/>
                               </RelativeLayout>
                               <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F0F0"/>
-
                               <RelativeLayout android:id="@+id/btn_clear_cache" android:layout_width="match_parent" android:layout_height="48dp">
                                   <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_centerVertical="true" android:text="清除缓存" android:textColor="#212121" android:textSize="13sp"/>
                                   <TextView android:id="@+id/tv_cache_size" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentEnd="true" android:layout_centerVertical="true" android:text="0.00 MB >" android:textColor="#757575" android:textSize="12sp"/>
                               </RelativeLayout>
                               <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F0F0"/>
-
                               <RelativeLayout android:id="@+id/btn_check_app_update" android:layout_width="match_parent" android:layout_height="48dp">
                                   <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_centerVertical="true" android:text="当前版本 (在线更新)" android:textColor="#212121" android:textSize="13sp"/>
                                   <TextView android:id="@+id/tv_app_version_info" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentEnd="true" android:layout_centerVertical="true" android:text="V2.0 >" android:textColor="@color/primary_blue" android:textSize="12sp"/>
@@ -756,7 +707,6 @@ jobs:
                           </LinearLayout>
                       </LinearLayout>
                   </ScrollView>
-
                   <!-- 搜索实时联想下拉 -->
                   <LinearLayout
                       android:id="@+id/layout_search_suggestions"
@@ -769,14 +719,12 @@ jobs:
                       android:orientation="vertical"
                       android:elevation="16dp"
                       android:visibility="gone">
-
                       <androidx.recyclerview.widget.RecyclerView
                           android:id="@+id/recycler_search_suggestions"
                           android:layout_width="match_parent"
                           android:layout_height="220dp"/>
                   </LinearLayout>
               </FrameLayout>
-
               <!-- 底部导航栏 -->
               <com.google.android.material.bottomnavigation.BottomNavigationView
                   android:id="@+id/bottom_nav"
@@ -787,8 +735,7 @@ jobs:
                   app:itemIconTint="@color/primary_blue"
                   app:itemTextColor="@color/text_main"
                   app:menu="@menu/bottom_nav_menu"/>
-
-              <!-- 核心：独立影片详情与播放页（参照截图 1 和截图 2，覆盖全屏） -->
+              <!-- 核心：独立影片详情与播放页（覆盖全屏） -->
               <LinearLayout
                   android:id="@+id/layout_detail_container"
                   android:layout_width="match_parent"
@@ -798,21 +745,18 @@ jobs:
                   android:clickable="true"
                   android:focusable="true"
                   android:visibility="gone">
-
                   <!-- 播放器容器 -->
                   <FrameLayout
                       android:id="@+id/player_container"
                       android:layout_width="match_parent"
                       android:layout_height="220dp"
                       android:background="@color/black">
-
                       <androidx.media3.ui.PlayerView
                           android:id="@+id/player_view"
                           android:layout_width="match_parent"
                           android:layout_height="match_parent"
                           app:use_controller="false"
                           app:resize_mode="fit"/>
-
                       <ProgressBar
                           android:id="@+id/buffering_progress"
                           android:layout_width="44dp"
@@ -820,7 +764,6 @@ jobs:
                           android:layout_gravity="center"
                           android:indeterminate="true"
                           android:visibility="gone"/>
-
                       <!-- 手势指示框：快进/快退 -->
                       <LinearLayout
                           android:id="@+id/layout_gesture_seek"
@@ -835,7 +778,6 @@ jobs:
                           <TextView android:id="@+id/tv_gesture_target_time" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="@color/white" android:textSize="16sp" android:textStyle="bold" android:text="00:15:30"/>
                           <TextView android:id="@+id/tv_gesture_delta_time" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:textColor="@color/primary_blue" android:textSize="12sp" android:text="+00:30"/>
                       </LinearLayout>
-
                       <!-- 手势指示框：右侧上下滑调亮度 -->
                       <LinearLayout
                           android:id="@+id/layout_brightness_indicator"
@@ -850,8 +792,7 @@ jobs:
                           <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="22sp" android:text="☀️"/>
                           <TextView android:id="@+id/tv_brightness_percent" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:textColor="@color/white" android:textSize="14sp" android:textStyle="bold" android:text="50%"/>
                       </LinearLayout>
-
-                      <!-- 锁屏状态下独立常驻信息栏（满足要求：时长进度、时间、电量） -->
+                      <!-- 锁屏状态下独立常驻信息栏 -->
                       <TextView
                           android:id="@+id/tv_locked_status"
                           android:layout_width="wrap_content"
@@ -862,8 +803,7 @@ jobs:
                           android:textSize="12sp"
                           android:text="00:01 | 24:34   15:15  🔋 97%"
                           android:visibility="gone"/>
-
-                      <!-- 锁屏按钮（居左垂直居中，参照截图 1） -->
+                      <!-- 锁屏按钮（居左垂直居中） -->
                       <TextView
                           android:id="@+id/btn_lock_screen"
                           android:layout_width="38dp"
@@ -876,8 +816,7 @@ jobs:
                           android:background="@drawable/bg_player_glass_btn"
                           android:text="🔓"
                           android:visibility="gone"/>
-
-                      <!-- 播放器右侧三按键垂直栏（参照截图 1） -->
+                      <!-- 播放器右侧三按键垂直栏 -->
                       <LinearLayout
                           android:id="@+id/right_player_actions"
                           android:layout_width="wrap_content"
@@ -886,7 +825,6 @@ jobs:
                           android:layout_marginEnd="16dp"
                           android:orientation="vertical"
                           android:visibility="gone">
-
                           <TextView
                               android:id="@+id/btn_action_aspect"
                               android:layout_width="36dp"
@@ -896,7 +834,6 @@ jobs:
                               android:textSize="18sp"
                               android:textColor="@color/white"
                               android:background="@drawable/bg_player_glass_btn"/>
-
                           <TextView
                               android:id="@+id/btn_action_settings"
                               android:layout_width="36dp"
@@ -907,7 +844,6 @@ jobs:
                               android:textSize="18sp"
                               android:textColor="@color/white"
                               android:background="@drawable/bg_player_glass_btn"/>
-
                           <TextView
                               android:id="@+id/btn_action_rotate"
                               android:layout_width="36dp"
@@ -919,7 +855,6 @@ jobs:
                               android:textColor="@color/white"
                               android:background="@drawable/bg_player_glass_btn"/>
                       </LinearLayout>
-
                       <!-- 播放控制覆盖层 -->
                       <RelativeLayout
                           android:id="@+id/player_control_overlay"
@@ -927,8 +862,7 @@ jobs:
                           android:layout_height="match_parent"
                           android:background="@drawable/bg_player_gradient"
                           android:visibility="visible">
-
-                          <!-- 顶部信息栏（参照截图 1） -->
+                          <!-- 顶部信息栏 -->
                           <LinearLayout
                               android:id="@+id/top_control_bar"
                               android:layout_width="match_parent"
@@ -936,7 +870,6 @@ jobs:
                               android:orientation="horizontal"
                               android:padding="12dp"
                               android:gravity="center_vertical">
-
                               <TextView
                                   android:id="@+id/btn_player_back"
                                   android:layout_width="32dp"
@@ -945,14 +878,12 @@ jobs:
                                   android:text="←"
                                   android:textColor="@color/white"
                                   android:textSize="22sp"/>
-
                               <LinearLayout
                                   android:layout_width="0dp"
                                   android:layout_height="wrap_content"
                                   android:layout_weight="1"
                                   android:layout_marginStart="8dp"
                                   android:orientation="vertical">
-
                                   <TextView
                                       android:id="@+id/tv_player_title"
                                       android:layout_width="wrap_content"
@@ -962,7 +893,6 @@ jobs:
                                       android:textStyle="bold"
                                       android:singleLine="true"
                                       android:text="正在播放"/>
-
                                   <TextView
                                       android:id="@+id/tv_player_resolution"
                                       android:layout_width="wrap_content"
@@ -972,7 +902,6 @@ jobs:
                                       android:textSize="10sp"
                                       android:text="[ 1920 X 1080 ]"/>
                               </LinearLayout>
-
                               <TextView
                                   android:id="@+id/tv_player_time_battery"
                                   android:layout_width="wrap_content"
@@ -981,8 +910,7 @@ jobs:
                                   android:textSize="12sp"
                                   android:text="15:15 | 00:00  🔋 100%"/>
                           </LinearLayout>
-
-                          <!-- 底部控制栏（参照截图 1） -->
+                          <!-- 底部控制栏 -->
                           <LinearLayout
                               android:id="@+id/bottom_control_bar"
                               android:layout_width="match_parent"
@@ -992,37 +920,31 @@ jobs:
                               android:paddingStart="12dp"
                               android:paddingEnd="12dp"
                               android:paddingBottom="8dp">
-
                               <SeekBar
                                   android:id="@+id/player_seek_bar"
                                   android:layout_width="match_parent"
                                   android:layout_height="wrap_content"
-                                  android:max="1000"
+                                  android:max="100"
                                   android:progress="0"/>
-
                               <RelativeLayout
                                   android:layout_width="match_parent"
                                   android:layout_height="36dp"
                                   android:layout_marginTop="2dp">
-
                                   <LinearLayout
                                       android:layout_width="wrap_content"
                                       android:layout_height="match_parent"
                                       android:layout_alignParentStart="true"
                                       android:gravity="center_vertical">
-
                                       <TextView android:id="@+id/btn_prev_ep" android:layout_width="32dp" android:layout_height="32dp" android:gravity="center" android:text="⏮" android:textColor="@color/white" android:textSize="16sp"/>
                                       <TextView android:id="@+id/btn_center_play" android:layout_width="32dp" android:layout_height="32dp" android:layout_marginStart="14dp" android:gravity="center" android:text="▶" android:textColor="@color/white" android:textSize="18sp"/>
                                       <TextView android:id="@+id/btn_next_ep" android:layout_width="32dp" android:layout_height="32dp" android:layout_marginStart="14dp" android:gravity="center" android:text="⏭" android:textColor="@color/white" android:textSize="16sp"/>
                                       <TextView android:id="@+id/tv_combined_time" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="12dp" android:textColor="#CCCCCC" android:textSize="11sp" android:text="00:00 / 00:00"/>
                                   </LinearLayout>
-
                                   <LinearLayout
                                       android:layout_width="wrap_content"
                                       android:layout_height="match_parent"
                                       android:layout_alignParentEnd="true"
                                       android:gravity="center_vertical">
-
                                       <TextView android:id="@+id/btn_speed_switch" android:layout_width="wrap_content" android:layout_height="wrap_content" android:padding="6dp" android:text="x1.0" android:textColor="@color/white" android:textSize="12sp" android:textStyle="bold"/>
                                       <TextView android:id="@+id/btn_episodes_sheet" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="14dp" android:padding="6dp" android:text="选集" android:textColor="@color/white" android:textSize="12sp"/>
                                       <TextView android:id="@+id/btn_fullscreen" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="14dp" android:padding="6dp" android:text="⛶" android:textColor="@color/white" android:textSize="16sp"/>
@@ -1030,8 +952,7 @@ jobs:
                               </RelativeLayout>
                           </LinearLayout>
                       </RelativeLayout>
-
-                      <!-- 播放器二级菜单抽屉（参照截图 2） -->
+                      <!-- 播放器二级菜单抽屉 -->
                       <ScrollView
                           android:id="@+id/player_settings_drawer"
                           android:layout_width="320dp"
@@ -1040,12 +961,10 @@ jobs:
                           android:background="#E615181E"
                           android:padding="16dp"
                           android:visibility="gone">
-
                           <LinearLayout
                               android:layout_width="match_parent"
                               android:layout_height="wrap_content"
                               android:orientation="vertical">
-
                               <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="画面比例" android:textColor="@color/white" android:textSize="13sp"/>
                               <LinearLayout android:layout_width="match_parent" android:layout_height="32dp" android:layout_marginTop="8dp" android:orientation="horizontal">
                                   <TextView android:id="@+id/btn_ratio_default" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:layout_marginEnd="4dp" android:gravity="center" android:text="默认" android:textColor="@color/white" android:textSize="11sp" android:background="@drawable/bg_filter_pill_selected"/>
@@ -1054,14 +973,12 @@ jobs:
                                   <TextView android:id="@+id/btn_ratio_fill" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:layout_marginEnd="4dp" android:gravity="center" android:text="填充" android:textColor="@color/white" android:textSize="11sp" android:background="@drawable/bg_filter_pill_normal"/>
                                   <TextView android:id="@+id/btn_ratio_zoom" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center" android:text="裁剪" android:textColor="@color/white" android:textSize="11sp" android:background="@drawable/bg_filter_pill_normal"/>
                               </LinearLayout>
-
                               <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:text="标记片头片尾" android:textColor="@color/white" android:textSize="13sp"/>
                               <LinearLayout android:layout_width="match_parent" android:layout_height="32dp" android:layout_marginTop="8dp" android:orientation="horizontal">
                                   <TextView android:id="@+id/btn_set_skip_intro" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:layout_marginEnd="6dp" android:gravity="center" android:text="片头 00:00" android:textColor="@color/white" android:textSize="11sp" android:background="@drawable/bg_filter_pill_normal"/>
                                   <TextView android:id="@+id/btn_set_skip_outro" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:layout_marginEnd="6dp" android:gravity="center" android:text="片尾 00:00" android:textColor="@color/white" android:textSize="11sp" android:background="@drawable/bg_filter_pill_normal"/>
                                   <TextView android:id="@+id/btn_reset_skip" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center" android:text="重置" android:textColor="@color/white" android:textSize="11sp" android:background="@drawable/bg_filter_pill_normal"/>
                               </LinearLayout>
-
                               <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:text="其他功能" android:textColor="@color/white" android:textSize="13sp"/>
                               <LinearLayout android:layout_width="match_parent" android:layout_height="32dp" android:layout_marginTop="8dp" android:orientation="horizontal">
                                   <TextView android:id="@+id/btn_drawer_replay" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:layout_marginEnd="4dp" android:gravity="center" android:text="重播" android:textColor="@color/white" android:textSize="11sp" android:background="@drawable/bg_filter_pill_normal"/>
@@ -1072,20 +989,17 @@ jobs:
                           </LinearLayout>
                       </ScrollView>
                   </FrameLayout>
-
-                  <!-- 影片信息与选集介绍面板（完全还原截图界面） -->
+                  <!-- 影片信息与选集介绍面板 -->
                   <ScrollView
                       android:id="@+id/detail_scroll_view"
                       android:layout_width="match_parent"
                       android:layout_height="match_parent"
                       android:background="#FFFFFF">
-
                       <LinearLayout
                           android:layout_width="match_parent"
                           android:layout_height="wrap_content"
                           android:orientation="vertical"
                           android:padding="16dp">
-
                           <!-- 顶部视频标头与来源 -->
                           <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content">
                               <TextView
@@ -1095,7 +1009,6 @@ jobs:
                                   android:textColor="@color/primary_blue"
                                   android:textSize="14sp"
                                   android:textStyle="bold"/>
-
                               <TextView
                                   android:id="@+id/tv_detail_source_name"
                                   android:layout_width="wrap_content"
@@ -1105,13 +1018,11 @@ jobs:
                                   android:textSize="12sp"
                                   android:text="来源: 💥韩剧 | 秒播💥"/>
                           </RelativeLayout>
-
                           <!-- 片名与简介入口 -->
                           <RelativeLayout
                               android:layout_width="match_parent"
                               android:layout_height="wrap_content"
                               android:layout_marginTop="10dp">
-
                               <TextView
                                   android:id="@+id/tv_detail_title"
                                   android:layout_width="wrap_content"
@@ -1120,7 +1031,6 @@ jobs:
                                   android:textSize="18sp"
                                   android:textStyle="bold"
                                   android:text="青春选择题"/>
-
                               <TextView
                                   android:id="@+id/btn_detail_intro"
                                   android:layout_width="wrap_content"
@@ -1130,7 +1040,6 @@ jobs:
                                   android:textSize="12sp"
                                   android:text="简介 >"/>
                           </RelativeLayout>
-
                           <!-- 主演与提示信息 -->
                           <TextView
                               android:id="@+id/tv_detail_actors"
@@ -1142,30 +1051,25 @@ jobs:
                               android:singleLine="true"
                               android:ellipsize="end"
                               android:text="主演: 免费分享！切勿上当！主演: 正在热映中..."/>
-
-                          <!-- 快捷按钮栏：收藏、下载、快搜、分享（截图） -->
+                          <!-- 快捷按钮栏：收藏、下载、快搜、分享 -->
                           <LinearLayout
                               android:layout_width="match_parent"
                               android:layout_height="40dp"
                               android:layout_marginTop="14dp"
                               android:orientation="horizontal"
                               android:gravity="center_vertical">
-
                               <TextView android:id="@+id/btn_detail_fav" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="♡ 收藏" android:textColor="#555555" android:textSize="12sp"/>
                               <TextView android:id="@+id/btn_detail_download" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="⤓ 下载" android:textColor="#555555" android:textSize="12sp"/>
                               <TextView android:id="@+id/btn_detail_quick_search" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="💬 快搜" android:textColor="#555555" android:textSize="12sp"/>
                               <TextView android:id="@+id/btn_detail_share" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="☍ 分享" android:textColor="#555555" android:textSize="12sp"/>
                           </LinearLayout>
-
                           <View android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginTop="10dp" android:background="#F0F0F0"/>
-
-                          <!-- 清晰度与播放线路选项条（截图） -->
+                          <!-- 清晰度与播放线路选项条 -->
                           <HorizontalScrollView
                               android:layout_width="match_parent"
                               android:layout_height="44dp"
                               android:layout_marginTop="6dp"
                               android:scrollbars="none">
-
                               <LinearLayout
                                   android:id="@+id/layout_quality_tabs"
                                   android:layout_width="wrap_content"
@@ -1173,13 +1077,11 @@ jobs:
                                   android:orientation="horizontal"
                                   android:gravity="center_vertical"/>
                           </HorizontalScrollView>
-
                           <!-- 选集标题与查看全集 -->
                           <RelativeLayout
                               android:layout_width="match_parent"
                               android:layout_height="wrap_content"
                               android:layout_marginTop="14dp">
-
                               <TextView
                                   android:layout_width="wrap_content"
                                   android:layout_height="wrap_content"
@@ -1187,7 +1089,6 @@ jobs:
                                   android:textColor="#111111"
                                   android:textSize="15sp"
                                   android:textStyle="bold"/>
-
                               <TextView
                                   android:id="@+id/btn_detail_view_all_episodes"
                                   android:layout_width="wrap_content"
@@ -1197,14 +1098,12 @@ jobs:
                                   android:textSize="12sp"
                                   android:text="查看全集 >"/>
                           </RelativeLayout>
-
-                          <!-- 选集横向滑动网格（参照截图蓝框样式） -->
+                          <!-- 选集横向滑动网格 -->
                           <HorizontalScrollView
                               android:layout_width="match_parent"
                               android:layout_height="wrap_content"
                               android:layout_marginTop="10dp"
                               android:scrollbars="none">
-
                               <LinearLayout
                                   android:id="@+id/layout_detail_episodes_list"
                                   android:layout_width="wrap_content"
@@ -1224,14 +1123,12 @@ jobs:
               <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
               <uses-permission android:name="android.permission.WAKE_LOCK" />
               <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
-
               <application
                   android:label="@string/app_name"
                   android:icon="@drawable/ic_app_icon"
                   android:theme="@style/Theme.MobileTVBox"
                   android:usesCleartextTraffic="true"
                   android:hardwareAccelerated="true">
-
                   <provider
                       android:name="androidx.core.content.FileProvider"
                       android:authorities="com.mobile.tvbox.fileprovider"
@@ -1241,7 +1138,6 @@ jobs:
                           android:name="android.support.FILE_PROVIDER_PATHS"
                           android:resource="@xml/file_paths" />
                   </provider>
-
                   <activity
                       android:name=".MainActivity"
                       android:exported="true"
@@ -1255,7 +1151,7 @@ jobs:
           </manifest>
           EOF
 
-      # 步骤 2：生成 Java 源代码（完整修复所有符号引用与手势支持）
+      # 步骤 2：生成 Java 源代码（完整在线更新功能版）
       - name: Generate Java Source Code
         run: |
           cat << 'EOF' > app/src/main/java/com/mobile/tvbox/MainActivity.java
@@ -1269,6 +1165,7 @@ jobs:
           import android.content.Intent;
           import android.content.SharedPreferences;
           import android.content.pm.ActivityInfo;
+          import android.content.pm.PackageManager;
           import android.content.res.Configuration;
           import android.net.Uri;
           import android.os.BatteryManager;
@@ -1298,6 +1195,7 @@ jobs:
           import android.widget.SeekBar;
           import android.widget.TextView;
           import android.widget.Toast;
+
           import androidx.annotation.NonNull;
           import androidx.appcompat.app.AlertDialog;
           import androidx.appcompat.app.AppCompatActivity;
@@ -1316,18 +1214,16 @@ jobs:
           import androidx.recyclerview.widget.LinearLayoutManager;
           import androidx.recyclerview.widget.RecyclerView;
           import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
           import com.bumptech.glide.Glide;
           import com.google.android.material.bottomnavigation.BottomNavigationView;
           import com.google.android.material.bottomsheet.BottomSheetDialog;
           import com.google.android.material.chip.Chip;
           import com.google.android.material.chip.ChipGroup;
-          import okhttp3.Call;
-          import okhttp3.Callback;
-          import okhttp3.OkHttpClient;
-          import okhttp3.Request;
-          import okhttp3.Response;
+
           import org.json.JSONArray;
           import org.json.JSONObject;
+
           import java.io.File;
           import java.io.FileOutputStream;
           import java.io.IOException;
@@ -1341,28 +1237,33 @@ jobs:
           import java.util.List;
           import java.util.Locale;
           import java.util.concurrent.TimeUnit;
+
           import javax.net.ssl.SSLContext;
           import javax.net.ssl.TrustManager;
           import javax.net.ssl.X509TrustManager;
 
+          import okhttp3.Call;
+          import okhttp3.Callback;
+          import okhttp3.OkHttpClient;
+          import okhttp3.Request;
+          import okhttp3.Response;
+
           public class MainActivity extends AppCompatActivity {
+
               private ExoPlayer player;
               private PlayerView playerView;
               private ProgressBar bufferingProgress;
               private FrameLayout playerContainer;
 
-              // 播放器状态
               private TextView tvPlayerTitle, tvPlayerResolution, tvPlayerTimeBattery, tvLockedStatus;
               private TextView btnLockScreen;
               private View rightPlayerActions;
-              private View bottomControlBar, playerControlOverlay;
+              private View playerControlOverlay;
               private View playerSettingsDrawer;
-
               private TextView btnPrevEp, btnNextEp, btnCenterPlay;
               private TextView tvCombinedTime, btnSpeedSwitch, btnEpisodesSheet, btnFullscreen;
               private SeekBar playerSeekBar;
 
-              // 手势相关
               private LinearLayout layoutGestureSeek, layoutBrightnessIndicator;
               private TextView tvGestureTargetTime, tvGestureDeltaTime, tvBrightnessPercent;
               private float touchStartX, touchStartY;
@@ -1372,7 +1273,6 @@ jobs:
               private long targetGesturePosition = 0;
               private float touchDownBrightness = 0.5f;
 
-              // 播放控制
               private VodItem currentPlayingVod = null;
               private int currentGroupIndex = 0;
               private int currentEpisodeIndex = -1;
@@ -1383,23 +1283,19 @@ jobs:
               private int skipOutroSeconds = 0;
               private int resizeModeIndex = 0;
               private String currentMediaUrl = "";
-
               private final float[] speeds = new float[]{1.0f, 1.25f, 1.5f, 2.0f};
               private int currentSpeedIndex = 0;
               private boolean isUserSeeking = false;
 
-              // 页面导航视图
               private LinearLayout layoutVod, layoutLive;
               private ScrollView layoutMine;
               private BottomNavigationView bottomNav;
               private LinearLayout layoutDetailContainer;
               private ScrollView detailScrollView;
 
-              // 详情页组件（参照截图）
               private TextView tvDetailSourceName, tvDetailTitle, tvDetailActors;
               private LinearLayout layoutQualityTabs, layoutDetailEpisodesList;
 
-              // 首页组件
               private SwipeRefreshLayout swipeVod;
               private RecyclerView recyclerVod;
               private VodAdapter vodAdapter;
@@ -1408,13 +1304,11 @@ jobs:
               private TextView btnSwitchVodSource;
               private ChipGroup chipGroupMainTypes, chipGroupRow1Type, chipGroupRow2Area, chipGroupRow3Sort, chipGroupRow4Year;
 
-              // 搜索联想
               private LinearLayout layoutSearchSuggestions;
               private RecyclerView recyclerSearchSuggestions;
               private SuggestionAdapter suggestionAdapter;
               private final List<String> currentSuggestions = new ArrayList<>();
 
-              // 直播与“我的”组件
               private RecyclerView recyclerLive;
               private LiveAdapter liveAdapter;
               private final List<LiveChannel> allLiveChannels = new ArrayList<>();
@@ -1426,7 +1320,11 @@ jobs:
               private SharedPreferences prefs;
               private OkHttpClient httpClient;
 
-              // 数据模型
+              // 在线更新相关
+              private static final int REQUEST_INSTALL_PERMISSION = 1001;
+              private File downloadApkFile = null;
+              private ProgressDialog updateProgressDialog = null;
+
               public static class Episode {
                   public String title, url;
                   public Episode(String title, String url) { this.title = title; this.url = url; }
@@ -1451,6 +1349,7 @@ jobs:
                   public String name, api;
                   public VodRoute(String name, String api) { this.name = name; this.api = api; }
               }
+
               private final List<VodRoute> vodRoutes = new ArrayList<>();
               private int currentVodRouteIndex = 0;
 
@@ -1468,17 +1367,14 @@ jobs:
                   skipOutroSeconds = prefs.getInt("skip_outro_sec", 0);
 
                   httpClient = createLenientHttpClient();
-
                   initRoutes();
                   initViews();
                   initPlayer();
                   initTouchAndControlEvents();
                   initFilterMatrix();
                   initSearchWatcher();
-
-                  loadVodData("", "1"); // 默认电影
+                  loadVodData("", "1");
                   loadDefaultOrCachedLive();
-
                   startPeriodicUiUpdates();
                   updateCacheDisplay();
                   checkInAppUpdate(false);
@@ -1487,20 +1383,20 @@ jobs:
               private OkHttpClient createLenientHttpClient() {
                   try {
                       TrustManager[] trustAll = new TrustManager[]{
-                          new X509TrustManager() {
-                              public void checkClientTrusted(X509Certificate[] c, String a) {}
-                              public void checkServerTrusted(X509Certificate[] c, String a) {}
-                              public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
-                          }
+                              new X509TrustManager() {
+                                  public void checkClientTrusted(X509Certificate[] c, String a) {}
+                                  public void checkServerTrusted(X509Certificate[] c, String a) {}
+                                  public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
+                              }
                       };
                       SSLContext sslContext = SSLContext.getInstance("SSL");
                       sslContext.init(null, trustAll, new SecureRandom());
                       return new OkHttpClient.Builder()
-                          .sslSocketFactory(sslContext.getSocketFactory(), (X509TrustManager) trustAll[0])
-                          .hostnameVerifier((h, s) -> true)
-                          .connectTimeout(15, TimeUnit.SECONDS)
-                          .readTimeout(15, TimeUnit.SECONDS)
-                          .build();
+                              .sslSocketFactory(sslContext.getSocketFactory(), (X509TrustManager) trustAll[0])
+                              .hostnameVerifier((h, s) -> true)
+                              .connectTimeout(15, TimeUnit.SECONDS)
+                              .readTimeout(15, TimeUnit.SECONDS)
+                              .build();
                   } catch (Exception e) {
                       return new OkHttpClient();
                   }
@@ -1523,18 +1419,15 @@ jobs:
                   rightPlayerActions = findViewById(R.id.right_player_actions);
                   playerControlOverlay = findViewById(R.id.player_control_overlay);
                   playerSettingsDrawer = findViewById(R.id.player_settings_drawer);
-
                   layoutGestureSeek = findViewById(R.id.layout_gesture_seek);
                   tvGestureTargetTime = findViewById(R.id.tv_gesture_target_time);
                   tvGestureDeltaTime = findViewById(R.id.tv_gesture_delta_time);
                   layoutBrightnessIndicator = findViewById(R.id.layout_brightness_indicator);
                   tvBrightnessPercent = findViewById(R.id.tv_brightness_percent);
-
                   tvPlayerTitle = findViewById(R.id.tv_player_title);
                   tvPlayerResolution = findViewById(R.id.tv_player_resolution);
                   tvPlayerTimeBattery = findViewById(R.id.tv_player_time_battery);
                   tvLockedStatus = findViewById(R.id.tv_locked_status);
-
                   btnPrevEp = findViewById(R.id.btn_prev_ep);
                   btnCenterPlay = findViewById(R.id.btn_center_play);
                   btnNextEp = findViewById(R.id.btn_next_ep);
@@ -1551,7 +1444,6 @@ jobs:
                   layoutDetailContainer = findViewById(R.id.layout_detail_container);
                   detailScrollView = findViewById(R.id.detail_scroll_view);
 
-                  // 详情页组件绑定
                   tvDetailSourceName = findViewById(R.id.tv_detail_source_name);
                   tvDetailTitle = findViewById(R.id.tv_detail_title);
                   tvDetailActors = findViewById(R.id.tv_detail_actors);
@@ -1562,7 +1454,6 @@ jobs:
                   recyclerVod = findViewById(R.id.recycler_vod);
                   etSearch = findViewById(R.id.et_search);
                   btnSwitchVodSource = findViewById(R.id.btn_switch_vod_source);
-
                   chipGroupMainTypes = findViewById(R.id.chip_group_main_types);
                   chipGroupRow1Type = findViewById(R.id.chip_group_row1_type);
                   chipGroupRow2Area = findViewById(R.id.chip_group_row2_area);
@@ -1587,12 +1478,10 @@ jobs:
                   vodAdapter = new VodAdapter();
                   recyclerVod.setAdapter(vodAdapter);
 
-                  // 底部导航栏彻底解耦（切换 Tab 立即隐藏详情播放层，互不干扰）
                   bottomNav.setOnItemSelectedListener(item -> {
                       int id = item.getItemId();
                       layoutDetailContainer.setVisibility(View.GONE);
                       if (player != null && !isLivePlaying) player.pause();
-
                       layoutVod.setVisibility(id == R.id.nav_vod ? View.VISIBLE : View.GONE);
                       layoutLive.setVisibility(id == R.id.nav_live ? View.VISIBLE : View.GONE);
                       layoutMine.setVisibility(id == R.id.nav_mine ? View.VISIBLE : View.GONE);
@@ -1602,7 +1491,6 @@ jobs:
 
                   findViewById(R.id.btn_home_history).setOnClickListener(v -> showHistoryDialog());
 
-                  // 个人中心绑定
                   findViewById(R.id.btn_mine_favorites).setOnClickListener(v -> showFavoritesDialog());
                   findViewById(R.id.btn_mine_history).setOnClickListener(v -> showHistoryDialog());
                   findViewById(R.id.btn_mine_cast).setOnClickListener(v -> showCastScreenDialog());
@@ -1623,7 +1511,6 @@ jobs:
                   });
               }
 
-              // 首页筛选矩阵
               private void initFilterMatrix() {
                   String[] mainTabs = new String[]{"豆瓣热播", "热门电影", "热播剧集", "热播综艺", "经典动漫"};
                   chipGroupMainTypes.removeAllViews();
@@ -1642,7 +1529,6 @@ jobs:
                       });
                       chipGroupMainTypes.addView(chip);
                   }
-
                   setupMatrixRow(chipGroupRow1Type, new String[]{"全部类型", "动作", "喜剧", "爱情", "科幻", "恐怖", "战争", "悬疑"});
                   setupMatrixRow(chipGroupRow2Area, new String[]{"全部地区", "华语", "欧美", "韩国", "日本", "泰国", "英国"});
                   setupMatrixRow(chipGroupRow3Sort, new String[]{"近期热度", "首映时间", "高分优先"});
@@ -1675,7 +1561,6 @@ jobs:
                           updateSuggestions(etSearch.getText().toString().trim());
                       }
                   });
-
                   etSearch.addTextChangedListener(new TextWatcher() {
                       @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
                       @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -1685,7 +1570,6 @@ jobs:
                       }
                       @Override public void afterTextChanged(Editable s) {}
                   });
-
                   etSearch.setOnEditorActionListener((v, actionId, event) -> {
                       if (actionId == EditorInfo.IME_ACTION_SEARCH || (event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) {
                           executeSearch(etSearch.getText().toString().trim());
@@ -1742,7 +1626,6 @@ jobs:
                   etSearch.setText(keyword);
                   etSearch.setSelection(keyword.length());
                   layoutSearchSuggestions.setVisibility(View.GONE);
-
                   View v = getCurrentFocus();
                   if (v != null) {
                       InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -1751,18 +1634,15 @@ jobs:
                   loadVodData(keyword, "");
               }
 
-              // 核心：点击影片进入【详情与选集介绍页】（参照截图）
               private void showVodDetail(VodItem vod) {
                   currentPlayingVod = vod;
                   currentGroupIndex = 0;
                   currentEpisodeIndex = 0;
-
                   layoutDetailContainer.setVisibility(View.VISIBLE);
                   tvDetailTitle.setText(vod.name);
                   tvDetailSourceName.setText("来源: " + (vod.playGroups.isEmpty() ? "默认极速专线" : vod.playGroups.get(0).fromName));
                   tvDetailActors.setText("简介: " + (vod.remarks.isEmpty() ? "超清原画完整版" : vod.remarks) + " · 免费分享切勿上当！");
 
-                  // 详情页快捷按钮绑定
                   findViewById(R.id.btn_detail_fav).setOnClickListener(v -> toggleFavorite(vod));
                   findViewById(R.id.btn_detail_download).setOnClickListener(v -> Toast.makeText(this, "已加入离线缓存队列", Toast.LENGTH_SHORT).show());
                   findViewById(R.id.btn_detail_quick_search).setOnClickListener(v -> executeSearch(vod.name));
@@ -1770,1149 +1650,4 @@ jobs:
                       ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
                       if (cm != null) {
                           cm.setPrimaryClip(ClipData.newPlainText("share", "影视盒子正在热播《" + vod.name + "》！"));
-                          Toast.makeText(this, "分享文案已复制！", Toast.LENGTH_SHORT).show();
-                      }
-                  });
-                  findViewById(R.id.btn_detail_intro).setOnClickListener(v -> {
-                      new AlertDialog.Builder(this).setTitle(vod.name).setMessage("【片名】" + vod.name + "\n【状态】" + vod.remarks + "\n【播放源】全网高清专线聚合").setPositiveButton("我知道了", null).show();
-                  });
-                  findViewById(R.id.btn_detail_view_all_episodes).setOnClickListener(v -> showEpisodeSheet(vod));
-
-                  // 渲染线路/清晰度 Tabs（参照截图）
-                  layoutQualityTabs.removeAllViews();
-                  for (int i = 0; i < vod.playGroups.size(); i++) {
-                      PlayGroup g = vod.playGroups.get(i);
-                      LinearLayout pill = new LinearLayout(this);
-                      pill.setOrientation(LinearLayout.VERTICAL);
-                      pill.setPadding(28, 10, 28, 10);
-                      pill.setBackgroundResource(i == 0 ? R.drawable.bg_pill_border_blue : R.drawable.bg_pill_gray);
-
-                      TextView tvTop = new TextView(this);
-                      tvTop.setText(g.fromName);
-                      tvTop.setTextSize(12);
-                      tvTop.setTextColor(i == 0 ? 0xFF2979FF : 0xFF333333);
-
-                      TextView tvSub = new TextView(this);
-                      tvSub.setText("共" + g.episodes.size() + "集");
-                      tvSub.setTextSize(10);
-                      tvSub.setTextColor(i == 0 ? 0xFF2979FF : 0xFF757575);
-
-                      pill.addView(tvTop);
-                      pill.addView(tvSub);
-
-                      final int gIdx = i;
-                      pill.setOnClickListener(v -> {
-                          currentGroupIndex = gIdx;
-                          tvDetailSourceName.setText("来源: " + g.fromName);
-                          renderDetailEpisodes(vod, gIdx);
-                          if (!g.episodes.isEmpty()) playVodEpisode(vod, gIdx, 0);
-                      });
-                      layoutQualityTabs.addView(pill);
-                  }
-
-                  // 渲染剧集横向条
-                  renderDetailEpisodes(vod, 0);
-
-                  // 自动起播第 1 集
-                  if (!vod.playGroups.isEmpty() && !vod.playGroups.get(0).episodes.isEmpty()) {
-                      playVodEpisode(vod, 0, 0);
-                  }
-              }
-
-              // 渲染详情页选集横向按钮（参照截图蓝框设计）
-              private void renderDetailEpisodes(VodItem vod, int groupIdx) {
-                  layoutDetailEpisodesList.removeAllViews();
-                  if (vod.playGroups.isEmpty() || groupIdx >= vod.playGroups.size()) return;
-
-                  PlayGroup g = vod.playGroups.get(groupIdx);
-                  for (int i = 0; i < g.episodes.size(); i++) {
-                      Episode ep = g.episodes.get(i);
-                      TextView btn = new TextView(this);
-                      btn.setText(ep.title);
-                      btn.setTextSize(12);
-                      btn.setPadding(32, 20, 32, 20);
-                      btn.setSingleLine(true);
-                      btn.setBackgroundResource(i == currentEpisodeIndex ? R.drawable.bg_pill_border_blue : R.drawable.bg_pill_gray);
-                      btn.setTextColor(i == currentEpisodeIndex ? 0xFF2979FF : 0xFF333333);
-
-                      LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                      lp.setMargins(0, 0, 20, 0);
-                      btn.setLayoutParams(lp);
-
-                      final int epIdx = i;
-                      btn.setOnClickListener(v -> {
-                          currentEpisodeIndex = epIdx;
-                          renderDetailEpisodes(vod, groupIdx);
-                          playVodEpisode(vod, groupIdx, epIdx);
-                      });
-                      layoutDetailEpisodesList.addView(btn);
-                  }
-              }
-
-              // 手势监听与控制事件（双重手势 + 锁屏显示完善）
-              @SuppressLint("ClickableViewAccessibility")
-              private void initTouchAndControlEvents() {
-                  // 播放器触摸手势：左右快进、右侧上下滑调亮度
-                  playerContainer.setOnTouchListener((v, event) -> {
-                      if (isScreenLocked) {
-                          if (event.getAction() == MotionEvent.ACTION_UP) {
-                              btnLockScreen.setVisibility(btnLockScreen.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
-                          }
-                          return true;
-                      }
-
-                      switch (event.getAction()) {
-                          case MotionEvent.ACTION_DOWN:
-                              touchStartX = event.getX();
-                              touchStartY = event.getY();
-                              touchDownPosition = player != null ? player.getCurrentPosition() : 0;
-                              isHorizontalDragging = false;
-                              isVerticalBrightnessDragging = false;
-
-                              float curBrightness = getWindow().getAttributes().screenBrightness;
-                              if (curBrightness < 0) {
-                                  try {
-                                      int sys = android.provider.Settings.System.getInt(getContentResolver(), android.provider.Settings.System.SCREEN_BRIGHTNESS);
-                                      touchDownBrightness = sys / 255.0f;
-                                  } catch (Exception e) { touchDownBrightness = 0.5f; }
-                              } else {
-                                  touchDownBrightness = curBrightness;
-                              }
-                              break;
-
-                          case MotionEvent.ACTION_MOVE:
-                              float deltaX = event.getX() - touchStartX;
-                              float deltaY = event.getY() - touchStartY;
-
-                              if (!isHorizontalDragging && !isVerticalBrightnessDragging) {
-                                  // 水平拖动 -> 快进快退
-                                  if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 40) {
-                                      if (player != null && player.getDuration() > 0 && !isLivePlaying) {
-                                          isHorizontalDragging = true;
-                                          uiHandler.removeCallbacks(hideControlsRunnable);
-                                          playerControlOverlay.setVisibility(View.GONE);
-                                          layoutGestureSeek.setVisibility(View.VISIBLE);
-                                      }
-                                  }
-                                  // 右侧垂直滑动 -> 调节亮度
-                                  else if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > 40) {
-                                      if (touchStartX > (playerContainer.getWidth() * 0.5f)) {
-                                          isVerticalBrightnessDragging = true;
-                                          uiHandler.removeCallbacks(hideControlsRunnable);
-                                          playerControlOverlay.setVisibility(View.GONE);
-                                          layoutBrightnessIndicator.setVisibility(View.VISIBLE);
-                                      }
-                                  }
-                              }
-
-                              if (isHorizontalDragging && player != null) {
-                                  long dur = player.getDuration();
-                                  if (dur > 0) {
-                                      float factor = deltaX / (float) playerContainer.getWidth();
-                                      long offsetMs = (long) (factor * 90000);
-                                      targetGesturePosition = Math.max(0, Math.min(dur, touchDownPosition + offsetMs));
-                                      tvGestureTargetTime.setText(formatTime(targetGesturePosition));
-                                      tvGestureDeltaTime.setText((offsetMs >= 0 ? "+" : "-") + formatTime(Math.abs(offsetMs)));
-                                  }
-                              }
-
-                              if (isVerticalBrightnessDragging) {
-                                  float deltaB = - (deltaY / (float) playerContainer.getHeight());
-                                  float newB = Math.max(0.01f, Math.min(1.0f, touchDownBrightness + deltaB));
-                                  WindowManager.LayoutParams lp = getWindow().getAttributes();
-                                  lp.screenBrightness = newB;
-                                  getWindow().setAttributes(lp);
-                                  tvBrightnessPercent.setText(((int) (newB * 100)) + "%");
-                              }
-                              break;
-
-                          case MotionEvent.ACTION_UP:
-                          case MotionEvent.ACTION_CANCEL:
-                              if (isHorizontalDragging) {
-                                  isHorizontalDragging = false;
-                                  layoutGestureSeek.setVisibility(View.GONE);
-                                  if (player != null) player.seekTo(targetGesturePosition);
-                                  resetHideControlsTimer();
-                              } else if (isVerticalBrightnessDragging) {
-                                  isVerticalBrightnessDragging = false;
-                                  layoutBrightnessIndicator.setVisibility(View.GONE);
-                                  resetHideControlsTimer();
-                              } else {
-                                  // 普通单击：展开/收起面板
-                                  if (playerControlOverlay.getVisibility() == View.VISIBLE) {
-                                      playerControlOverlay.setVisibility(View.GONE);
-                                      btnLockScreen.setVisibility(View.GONE);
-                                      rightPlayerActions.setVisibility(View.GONE);
-                                      uiHandler.removeCallbacks(hideControlsRunnable);
-                                  } else {
-                                      playerControlOverlay.setVisibility(View.VISIBLE);
-                                      btnLockScreen.setVisibility(View.VISIBLE);
-                                      rightPlayerActions.setVisibility(View.VISIBLE);
-                                      resetHideControlsTimer();
-                                  }
-                              }
-                              break;
-                      }
-                      return true;
-                  });
-
-                  // 锁屏切换（截图 1 左侧）
-                  btnLockScreen.setOnClickListener(v -> {
-                      isScreenLocked = !isScreenLocked;
-                      if (isScreenLocked) {
-                          btnLockScreen.setText("🔒");
-                          playerControlOverlay.setVisibility(View.GONE);
-                          rightPlayerActions.setVisibility(View.GONE);
-                          tvLockedStatus.setVisibility(View.VISIBLE); // 锁屏情况下依然常驻显示时长进度、时间、电量
-                          Toast.makeText(this, "屏幕已锁定", Toast.LENGTH_SHORT).show();
-                      } else {
-                          btnLockScreen.setText("🔓");
-                          playerControlOverlay.setVisibility(View.VISIBLE);
-                          rightPlayerActions.setVisibility(View.VISIBLE);
-                          tvLockedStatus.setVisibility(View.GONE);
-                          resetHideControlsTimer();
-                          Toast.makeText(this, "屏幕已解锁", Toast.LENGTH_SHORT).show();
-                      }
-                  });
-
-                  // 返回按键（退出全屏或退出详情页）
-                  findViewById(R.id.btn_player_back).setOnClickListener(v -> {
-                      int orientation = getResources().getConfiguration().orientation;
-                      if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                          setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-                      } else {
-                          layoutDetailContainer.setVisibility(View.GONE);
-                          if (player != null) player.stop();
-                      }
-                  });
-
-                  btnCenterPlay.setOnClickListener(v -> {
-                      resetHideControlsTimer();
-                      if (player != null) {
-                          if (player.isPlaying()) player.pause();
-                          else player.play();
-                          updatePlayPauseIcon();
-                      }
-                  });
-
-                  btnPrevEp.setOnClickListener(v -> { resetHideControlsTimer(); playPrevEpisode(); });
-                  btnNextEp.setOnClickListener(v -> { resetHideControlsTimer(); playNextEpisode(); });
-                  btnEpisodesSheet.setOnClickListener(v -> {
-                      resetHideControlsTimer();
-                      if (currentPlayingVod != null) showEpisodeSheet(currentPlayingVod);
-                  });
-
-                  btnSpeedSwitch.setOnClickListener(v -> {
-                      resetHideControlsTimer();
-                      currentSpeedIndex = (currentSpeedIndex + 1) % speeds.length;
-                      float speed = speeds[currentSpeedIndex];
-                      if (player != null) player.setPlaybackSpeed(speed);
-                      btnSpeedSwitch.setText("x" + speed);
-                      Toast.makeText(this, "倍速: " + speed + "x", Toast.LENGTH_SHORT).show();
-                  });
-
-                  findViewById(R.id.btn_action_rotate).setOnClickListener(v -> {
-                      resetHideControlsTimer();
-                      toggleFullscreen();
-                  });
-
-                  btnFullscreen.setOnClickListener(v -> {
-                      resetHideControlsTimer();
-                      toggleFullscreen();
-                  });
-
-                  findViewById(R.id.btn_action_settings).setOnClickListener(v -> {
-                      playerControlOverlay.setVisibility(View.GONE);
-                      rightPlayerActions.setVisibility(View.GONE);
-                      playerSettingsDrawer.setVisibility(View.VISIBLE);
-                  });
-
-                  findViewById(R.id.btn_action_aspect).setOnClickListener(v -> showAspectRatioDialog());
-
-                  findViewById(R.id.btn_ratio_default).setOnClickListener(v -> setRatio(AspectRatioFrameLayout.RESIZE_MODE_FIT, "默认"));
-                  findViewById(R.id.btn_ratio_16_9).setOnClickListener(v -> setRatio(AspectRatioFrameLayout.RESIZE_MODE_FIT, "16:9"));
-                  findViewById(R.id.btn_ratio_4_3).setOnClickListener(v -> setRatio(AspectRatioFrameLayout.RESIZE_MODE_FIT, "4:3"));
-                  findViewById(R.id.btn_ratio_fill).setOnClickListener(v -> setRatio(AspectRatioFrameLayout.RESIZE_MODE_FILL, "填充"));
-                  findViewById(R.id.btn_ratio_zoom).setOnClickListener(v -> setRatio(AspectRatioFrameLayout.RESIZE_MODE_ZOOM, "裁剪"));
-
-                  findViewById(R.id.btn_set_skip_intro).setOnClickListener(v -> showCustomSkipInputDialog(true));
-                  findViewById(R.id.btn_set_skip_outro).setOnClickListener(v -> showCustomSkipInputDialog(false));
-                  findViewById(R.id.btn_reset_skip).setOnClickListener(v -> {
-                      skipIntroSeconds = 0; skipOutroSeconds = 0;
-                      prefs.edit().putInt("skip_intro_sec", 0).putInt("skip_outro_sec", 0).apply();
-                      ((TextView) findViewById(R.id.btn_set_skip_intro)).setText("片头 00:00");
-                      ((TextView) findViewById(R.id.btn_set_skip_outro)).setText("片尾 00:00");
-                      Toast.makeText(this, "片头片尾已重置", Toast.LENGTH_SHORT).show();
-                  });
-
-                  findViewById(R.id.btn_drawer_replay).setOnClickListener(v -> {
-                      if (player != null) player.seekTo(0);
-                      playerSettingsDrawer.setVisibility(View.GONE);
-                  });
-                  findViewById(R.id.btn_drawer_refresh).setOnClickListener(v -> {
-                      if (currentPlayingVod != null) playVodEpisode(currentPlayingVod, currentGroupIndex, currentEpisodeIndex);
-                      playerSettingsDrawer.setVisibility(View.GONE);
-                  });
-                  findViewById(R.id.btn_drawer_fav).setOnClickListener(v -> {
-                      if (currentPlayingVod != null) toggleFavorite(currentPlayingVod);
-                  });
-                  findViewById(R.id.btn_drawer_cast).setOnClickListener(v -> {
-                      playerSettingsDrawer.setVisibility(View.GONE);
-                      showCastScreenDialog();
-                  });
-
-                  playerSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                      @Override public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                          if (fromUser && !isLivePlaying && player != null && player.getDuration() > 0) {
-                              long newPos = (player.getDuration() * progress) / 1000L;
-                              tvCombinedTime.setText(formatTime(newPos) + " / " + formatTime(player.getDuration()));
-                          }
-                      }
-                      @Override public void onStartTrackingTouch(SeekBar seekBar) {
-                          isUserSeeking = true;
-                          uiHandler.removeCallbacks(hideControlsRunnable);
-                      }
-                      @Override public void onStopTrackingTouch(SeekBar seekBar) {
-                          isUserSeeking = false;
-                          if (!isLivePlaying && player != null && player.getDuration() > 0) {
-                              player.seekTo((player.getDuration() * seekBar.getProgress()) / 1000L);
-                          }
-                          resetHideControlsTimer();
-                      }
-                  });
-              }
-
-              private void setRatio(int mode, String name) {
-                  playerView.setResizeMode(mode);
-                  Toast.makeText(this, "画面比例已调整: " + name, Toast.LENGTH_SHORT).show();
-              }
-
-              private final Runnable hideControlsRunnable = () -> {
-                  if (playerControlOverlay.getVisibility() == View.VISIBLE && !isScreenLocked) {
-                      playerControlOverlay.setVisibility(View.GONE);
-                      btnLockScreen.setVisibility(View.GONE);
-                      rightPlayerActions.setVisibility(View.GONE);
-                  }
-              };
-
-              private void resetHideControlsTimer() {
-                  uiHandler.removeCallbacks(hideControlsRunnable);
-                  if (playerControlOverlay.getVisibility() == View.VISIBLE && !isScreenLocked) {
-                      uiHandler.postDelayed(hideControlsRunnable, 5000);
-                  }
-              }
-
-              private void initPlayer() {
-                  DefaultHttpDataSource.Factory httpFactory = new DefaultHttpDataSource.Factory()
-                      .setUserAgent("Mozilla/5.0 (Linux; Android 14; Mobile) AppleWebKit/537.36")
-                      .setAllowCrossProtocolRedirects(true)
-                      .setConnectTimeoutMs(15000)
-                      .setReadTimeoutMs(15000);
-
-                  DefaultDataSource.Factory dataSourceFactory = new DefaultDataSource.Factory(this, httpFactory);
-                  DefaultMediaSourceFactory mediaSourceFactory = new DefaultMediaSourceFactory(this).setDataSourceFactory(dataSourceFactory);
-
-                  player = new ExoPlayer.Builder(this).setMediaSourceFactory(mediaSourceFactory).build();
-                  playerView.setPlayer(player);
-
-                  player.addListener(new Player.Listener() {
-                      @Override public void onPlaybackStateChanged(int state) {
-                          bufferingProgress.setVisibility(state == Player.STATE_BUFFERING ? View.VISIBLE : View.GONE);
-                          if (state == Player.STATE_READY) {
-                              updatePlayPauseIcon();
-                              updateProgress();
-                              if (hasPendingSkipIntro && skipIntroSeconds > 0 && !isLivePlaying) {
-                                  hasPendingSkipIntro = false;
-                                  if (player.getDuration() > skipIntroSeconds * 1000L) {
-                                      player.seekTo(skipIntroSeconds * 1000L);
-                                  }
-                              }
-                          } else if (state == Player.STATE_ENDED) {
-                              playNextEpisode();
-                          }
-                      }
-                      @Override public void onIsPlayingChanged(boolean isPlaying) { updatePlayPauseIcon(); }
-                      @Override public void onPlayerError(@NonNull PlaybackException error) {
-                          bufferingProgress.setVisibility(View.GONE);
-                          Toast.makeText(MainActivity.this, "播放失败(" + error.getErrorCodeName() + ")，请尝试换线", Toast.LENGTH_SHORT).show();
-                      }
-                  });
-              }
-
-              private void updatePlayPauseIcon() {
-                  btnCenterPlay.setText(player.isPlaying() ? "⏸" : "▶");
-              }
-
-              private void playPrevEpisode() {
-                  if (currentPlayingVod != null && currentEpisodeIndex > 0) {
-                      playVodEpisode(currentPlayingVod, currentGroupIndex, currentEpisodeIndex - 1);
-                  } else {
-                      Toast.makeText(this, "已经是第一集了", Toast.LENGTH_SHORT).show();
-                  }
-              }
-
-              private void playNextEpisode() {
-                  if (currentPlayingVod != null) {
-                      PlayGroup group = currentPlayingVod.playGroups.get(currentGroupIndex);
-                      if (currentEpisodeIndex < group.episodes.size() - 1) {
-                          playVodEpisode(currentPlayingVod, currentGroupIndex, currentEpisodeIndex + 1);
-                      } else {
-                          Toast.makeText(this, "已经播完最后一集", Toast.LENGTH_SHORT).show();
-                      }
-                  }
-              }
-
-              private void playVodEpisode(VodItem item, int groupIdx, int epIdx) {
-                  currentPlayingVod = item;
-                  currentGroupIndex = groupIdx;
-                  currentEpisodeIndex = epIdx;
-                  isLivePlaying = false;
-                  hasPendingSkipIntro = true;
-
-                  btnPrevEp.setVisibility(View.VISIBLE);
-                  btnNextEp.setVisibility(View.VISIBLE);
-                  btnSpeedSwitch.setVisibility(View.VISIBLE);
-                  btnEpisodesSheet.setVisibility(View.VISIBLE);
-                  playerSeekBar.setVisibility(View.VISIBLE);
-
-                  PlayGroup group = item.playGroups.get(groupIdx);
-                  Episode ep = group.episodes.get(epIdx);
-
-                  tvPlayerResolution.setText("[ 1920 X 1080 ]");
-                  saveWatchHistory(item, ep.title);
-                  playMedia(item.name + " " + ep.title, ep.url);
-              }
-
-              public void playLiveStream(String name, String url) {
-                  isLivePlaying = true;
-                  currentPlayingVod = null;
-                  layoutDetailContainer.setVisibility(View.VISIBLE);
-                  detailScrollView.setVisibility(View.GONE); // 直播模式隐藏点播详情
-
-                  tvPlayerResolution.setText("[ 电视直播专线 ]");
-                  btnPrevEp.setVisibility(View.GONE);
-                  btnNextEp.setVisibility(View.GONE);
-                  btnSpeedSwitch.setVisibility(View.GONE);
-                  btnEpisodesSheet.setVisibility(View.GONE);
-                  playerSeekBar.setVisibility(View.INVISIBLE);
-                  tvCombinedTime.setText("🔴 实时直播");
-                  playMedia(name, url);
-              }
-
-              private void playMedia(String title, String url) {
-                  currentMediaUrl = url.trim().replace("&amp;", "&");
-                  tvPlayerTitle.setText(title);
-                  player.stop();
-
-                  MediaItem.Builder builder = new MediaItem.Builder().setUri(currentMediaUrl);
-                  if (currentMediaUrl.contains(".m3u8") || currentMediaUrl.contains("m3u8")) {
-                      builder.setMimeType(MimeTypes.APPLICATION_M3U8);
-                  }
-                  player.setMediaItem(builder.build());
-                  player.prepare();
-                  player.play();
-
-                  resetHideControlsTimer();
-              }
-
-              private void startPeriodicUiUpdates() {
-                  uiHandler.post(new Runnable() {
-                      @Override public void run() {
-                          String curTime = new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date());
-                          BatteryManager bm = (BatteryManager) getSystemService(BATTERY_SERVICE);
-                          int battery = bm != null ? bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY) : 100;
-
-                          long dur = player != null ? player.getDuration() : 0;
-                          long pos = player != null ? player.getCurrentPosition() : 0;
-
-                          String progressStr = formatTime(pos) + " | " + formatTime(dur);
-                          tvPlayerTimeBattery.setText(curTime + "   " + progressStr + "  🔋 " + battery + "%");
-                          tvLockedStatus.setText(progressStr + "   " + curTime + "  🔋 " + battery + "%");
-
-                          if (player != null && !isLivePlaying && player.isPlaying() && !isUserSeeking) {
-                              updateProgress();
-                              if (skipOutroSeconds > 0 && dur > 40000L && pos >= (dur - skipOutroSeconds * 1000L)) {
-                                  playNextEpisode();
-                              }
-                          }
-                          uiHandler.postDelayed(this, 1000);
-                      }
-                  });
-              }
-
-              private void updateProgress() {
-                  long duration = player.getDuration();
-                  long position = player.getCurrentPosition();
-                  if (duration > 0) {
-                      int progress = (int) ((position * 1000L) / duration);
-                      playerSeekBar.setProgress(progress);
-                      tvCombinedTime.setText(formatTime(position) + " / " + formatTime(duration));
-                  }
-              }
-
-              private String formatTime(long ms) {
-                  long totalSec = Math.max(0, ms / 1000);
-                  long sec = totalSec % 60;
-                  long min = (totalSec / 60) % 60;
-                  long hour = totalSec / 3600;
-                  if (hour > 0) return String.format(Locale.getDefault(), "%02d:%02d:%02d", hour, min, sec);
-                  return String.format(Locale.getDefault(), "%02d:%02d", min, sec);
-              }
-
-              private void toggleFullscreen() {
-                  int orientation = getResources().getConfiguration().orientation;
-                  if (orientation == Configuration.ORIENTATION_PORTRAIT) {
-                      setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-                  } else {
-                      setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-                  }
-              }
-
-              @Override
-              public void onConfigurationChanged(@NonNull Configuration newConfig) {
-                  super.onConfigurationChanged(newConfig);
-                  if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                      getWindow().getDecorView().setSystemUiVisibility(
-                          View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                      );
-                      playerContainer.setLayoutParams(new LinearLayout.LayoutParams(
-                          ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
-                      ));
-                      detailScrollView.setVisibility(View.GONE);
-                  } else {
-                      getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
-                      playerContainer.setLayoutParams(new LinearLayout.LayoutParams(
-                          ViewGroup.LayoutParams.MATCH_PARENT, (int) (220 * getResources().getDisplayMetrics().density)
-                      ));
-                      playerSettingsDrawer.setVisibility(View.GONE);
-                      if (!isLivePlaying) detailScrollView.setVisibility(View.VISIBLE);
-                  }
-              }
-
-              private void saveWatchHistory(VodItem item, String epTitle) {
-                  try {
-                      String historyStr = prefs.getString("watch_history", "[]");
-                      JSONArray arr = new JSONArray(historyStr);
-                      JSONArray newArr = new JSONArray();
-
-                      JSONObject obj = new JSONObject();
-                      obj.put("id", item.id);
-                      obj.put("name", item.name);
-                      obj.put("pic", item.pic);
-                      obj.put("epTitle", epTitle);
-                      obj.put("time", System.currentTimeMillis());
-                      newArr.put(obj);
-
-                      for (int i = 0; i < arr.length() && newArr.length() < 30; i++) {
-                          JSONObject old = arr.getJSONObject(i);
-                          if (!old.optString("id").equals(item.id)) newArr.put(old);
-                      }
-                      prefs.edit().putString("watch_history", newArr.toString()).apply();
-                  } catch (Exception ignored) {}
-              }
-
-              private void toggleFavorite(VodItem item) {
-                  try {
-                      String favStr = prefs.getString("user_favorites", "[]");
-                      JSONArray arr = new JSONArray(favStr);
-                      boolean found = false;
-                      JSONArray newArr = new JSONArray();
-
-                      for (int i = 0; i < arr.length(); i++) {
-                          JSONObject obj = arr.getJSONObject(i);
-                          if (obj.optString("id").equals(item.id)) found = true;
-                          else newArr.put(obj);
-                      }
-
-                      if (!found) {
-                          JSONObject obj = new JSONObject();
-                          obj.put("id", item.id);
-                          obj.put("name", item.name);
-                          obj.put("pic", item.pic);
-                          obj.put("remarks", item.remarks);
-                          newArr.put(obj);
-                          Toast.makeText(this, "已加入收藏夹 ★", Toast.LENGTH_SHORT).show();
-                      } else {
-                          Toast.makeText(this, "已从收藏夹移除", Toast.LENGTH_SHORT).show();
-                      }
-                      prefs.edit().putString("user_favorites", newArr.toString()).apply();
-                  } catch (Exception ignored) {}
-              }
-
-              private void showHistoryDialog() {
-                  showListDialog("观看历史", prefs.getString("watch_history", "[]"), true);
-              }
-
-              private void showFavoritesDialog() {
-                  showListDialog("我的收藏", prefs.getString("user_favorites", "[]"), false);
-              }
-
-              private void showListDialog(String title, String jsonStr, boolean isHistory) {
-                  BottomSheetDialog dialog = new BottomSheetDialog(this);
-                  View v = LayoutInflater.from(this).inflate(R.layout.dialog_episodes, null);
-                  ((TextView) v.findViewById(R.id.tv_episode_sheet_title)).setText(title);
-                  v.findViewById(R.id.chip_group_sources).setVisibility(View.GONE);
-
-                  RecyclerView rv = v.findViewById(R.id.recycler_episodes);
-                  rv.setLayoutManager(new LinearLayoutManager(this));
-
-                  List<JSONObject> list = new ArrayList<>();
-                  try {
-                      JSONArray arr = new JSONArray(jsonStr);
-                      for (int i = 0; i < arr.length(); i++) list.add(arr.getJSONObject(i));
-                  } catch (Exception ignored) {}
-
-                  rv.setAdapter(new RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-                      @NonNull @Override public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup p, int vt) {
-                          View itemV = LayoutInflater.from(p.getContext()).inflate(R.layout.item_history_fav, p, false);
-                          return new RecyclerView.ViewHolder(itemV) {};
-                      }
-                      @Override public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int pos) {
-                          JSONObject o = list.get(pos);
-                          TextView tvT = holder.itemView.findViewById(R.id.tv_title);
-                          TextView tvD = holder.itemView.findViewById(R.id.tv_desc);
-                          ImageView iv = holder.itemView.findViewById(R.id.iv_thumb);
-
-                          tvT.setText(o.optString("name"));
-                          tvD.setText(isHistory ? ("上次播放: " + o.optString("epTitle")) : o.optString("remarks"));
-                          Glide.with(MainActivity.this).load(o.optString("pic")).placeholder(R.drawable.bg_poster_placeholder).into(iv);
-
-                          holder.itemView.setOnClickListener(click -> {
-                              dialog.dismiss();
-                              loadVodData(o.optString("name"), "");
-                          });
-                      }
-                      @Override public int getItemCount() { return list.size(); }
-                  });
-
-                  dialog.setContentView(v);
-                  dialog.show();
-              }
-
-              private void showCastScreenDialog() {
-                  if (currentMediaUrl == null || currentMediaUrl.isEmpty()) {
-                      Toast.makeText(this, "暂无正在播放的视频", Toast.LENGTH_SHORT).show();
-                      return;
-                  }
-                  String[] ops = new String[]{"📡 发送至局域网电视 / 投屏播放器", "📋 复制播放直链"};
-                  new AlertDialog.Builder(this).setTitle("大屏无线投屏")
-                      .setItems(ops, (d, w) -> {
-                          if (w == 0) {
-                              try {
-                                  Intent it = new Intent(Intent.ACTION_VIEW);
-                                  it.setDataAndType(Uri.parse(currentMediaUrl), "video/*");
-                                  startActivity(Intent.createChooser(it, "选择大屏投屏设备"));
-                              } catch (Exception e) {
-                                  Toast.makeText(this, "未检测到已安装的外部投屏组件", Toast.LENGTH_SHORT).show();
-                              }
-                          } else {
-                              ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-                              if (cm != null) {
-                                  cm.setPrimaryClip(ClipData.newPlainText("URL", currentMediaUrl));
-                                  Toast.makeText(this, "直链已复制到剪贴板！", Toast.LENGTH_SHORT).show();
-                              }
-                          }
-                      }).show();
-              }
-
-              private void updateCacheDisplay() {
-                  new Thread(() -> {
-                      long sz = getDirSize(getCacheDir()) + getDirSize(getExternalCacheDir());
-                      String str = formatFileSize(sz);
-                      runOnUiThread(() -> tvCacheSize.setText(str + " >"));
-                  }).start();
-              }
-
-              private void clearAppCache() {
-                  ProgressDialog pd = new ProgressDialog(this);
-                  pd.setMessage("正在清理缓存...");
-                  pd.show();
-                  new Thread(() -> {
-                      deleteDir(getCacheDir());
-                      deleteDir(getExternalCacheDir());
-                      runOnUiThread(() -> Glide.get(MainActivity.this).clearMemory());
-                      Glide.get(MainActivity.this).clearDiskCache();
-                      runOnUiThread(() -> {
-                          pd.dismiss();
-                          updateCacheDisplay();
-                          Toast.makeText(MainActivity.this, "缓存清理成功！", Toast.LENGTH_SHORT).show();
-                      });
-                  }).start();
-              }
-
-              private long getDirSize(File d) {
-                  long s = 0;
-                  if (d != null && d.isDirectory()) {
-                      File[] fs = d.listFiles();
-                      if (fs != null) for (File f : fs) s += f.isDirectory() ? getDirSize(f) : f.length();
-                  } else if (d != null) s += d.length();
-                  return s;
-              }
-
-              private boolean deleteDir(File d) {
-                  if (d != null && d.isDirectory()) {
-                      String[] cs = d.list();
-                      if (cs != null) for (String c : cs) deleteDir(new File(d, c));
-                      return d.delete();
-                  } else if (d != null) return d.delete();
-                  return false;
-              }
-
-              private String formatFileSize(long bytes) {
-                  if (bytes <= 0) return "0.00 MB";
-                  double mb = bytes / (1024.0 * 1024.0);
-                  if (mb < 0.1) return String.format(Locale.getDefault(), "%.2f KB", bytes / 1024.0);
-                  return String.format(Locale.getDefault(), "%.2f MB", mb);
-              }
-
-              private void checkInAppUpdate(boolean userTriggered) {
-                  ProgressDialog pd = userTriggered ? ProgressDialog.show(this, "", "检测新版本中...") : null;
-                  String checkUrl = "https://gh-proxy.org/raw.githubusercontent.com/yujingyang168-cpu/my-mobile-tvbox/main/version.json";
-
-                  httpClient.newCall(new Request.Builder().url(checkUrl).build()).enqueue(new Callback() {
-                      @Override public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                          if (pd != null) runOnUiThread(pd::dismiss);
-                      }
-                      @Override public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                          if (pd != null) runOnUiThread(pd::dismiss);
-                          if (response.isSuccessful() && response.body() != null) {
-                              try {
-                                  JSONObject j = new JSONObject(response.body().string());
-                                  int latestCode = j.optInt("versionCode", 0);
-                                  String latestName = j.optString("versionName", "");
-                                  String apkUrl = j.optString("apkUrl", "");
-                                  String log = j.optString("changelog", "性能升级与界面重构");
-
-                                  int curCode = getPackageManager().getPackageInfo(getPackageName(), 0).versionCode;
-                                  runOnUiThread(() -> {
-                                      tvAppVersionInfo.setText("V" + latestName + " >");
-                                      if (latestCode > curCode && !apkUrl.isEmpty()) {
-                                          new AlertDialog.Builder(MainActivity.this)
-                                              .setTitle("🚀 发现新版本 V" + latestName)
-                                              .setMessage("更新说明：\n" + log)
-                                              .setPositiveButton("立即在线升级", (d, w) -> startDownloadAndInstall(apkUrl))
-                                              .setNegativeButton("稍后", null).show();
-                                      } else if (userTriggered) {
-                                          Toast.makeText(MainActivity.this, "当前已是最新版本！", Toast.LENGTH_SHORT).show();
-                                      }
-                                  });
-                              } catch (Exception ignored) {}
-                          }
-                      }
-                  });
-              }
-
-              private void startDownloadAndInstall(String url) {
-                  ProgressDialog pd = new ProgressDialog(this);
-                  pd.setTitle("正在下载更新包");
-                  pd.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-                  pd.setMax(100);
-                  pd.setCancelable(false);
-                  pd.show();
-
-                  httpClient.newCall(new Request.Builder().url(url).build()).enqueue(new Callback() {
-                      @Override public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                          runOnUiThread(() -> { pd.dismiss(); Toast.makeText(MainActivity.this, "下载失败，请检查网络", Toast.LENGTH_SHORT).show(); });
-                      }
-                      @Override public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                          if (response.isSuccessful() && response.body() != null) {
-                              File apk = new File(getExternalFilesDir(null), "update.apk");
-                              long total = response.body().contentLength();
-                              long downloaded = 0;
-                              InputStream is = response.body().byteStream();
-                              FileOutputStream fos = new FileOutputStream(apk);
-                              byte[] buf = new byte[8192];
-                              int len;
-                              while ((len = is.read(buf)) != -1) {
-                                  fos.write(buf, 0, len);
-                                  downloaded += len;
-                                  int p = (int) ((downloaded * 100) / total);
-                                  runOnUiThread(() -> pd.setProgress(p));
-                              }
-                              fos.close(); is.close();
-                              runOnUiThread(() -> {
-                                  pd.dismiss();
-                                  Intent it = new Intent(Intent.ACTION_VIEW);
-                                  it.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                  Uri u = FileProvider.getUriForFile(MainActivity.this, "com.mobile.tvbox.fileprovider", apk);
-                                  it.setDataAndType(u, "application/vnd.android.package-archive");
-                                  it.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                                  startActivity(it);
-                              });
-                          }
-                      }
-                  });
-              }
-
-              private void showCustomSkipInputDialog(boolean isIntro) {
-                  EditText et = new EditText(this);
-                  et.setInputType(InputType.TYPE_CLASS_NUMBER);
-                  et.setText(String.valueOf(isIntro ? skipIntroSeconds : skipOutroSeconds));
-                  new AlertDialog.Builder(this).setTitle(isIntro ? "自定义跳过片头秒数" : "自定义跳过片尾秒数")
-                      .setView(et)
-                      .setPositiveButton("保存", (d, w) -> {
-                          int sec = 0;
-                          try { sec = Integer.parseInt(et.getText().toString().trim()); } catch (Exception ignored) {}
-                          if (isIntro) {
-                              skipIntroSeconds = sec;
-                              prefs.edit().putInt("skip_intro_sec", sec).apply();
-                              ((TextView) findViewById(R.id.btn_set_skip_intro)).setText("片头 " + sec + "s");
-                          } else {
-                              skipOutroSeconds = sec;
-                              prefs.edit().putInt("skip_outro_sec", sec).apply();
-                              ((TextView) findViewById(R.id.btn_set_skip_outro)).setText("片尾 " + sec + "s");
-                          }
-                      }).show();
-              }
-
-              private void showAspectRatioDialog() {
-                  String[] ops = new String[]{"自适应 (Fit)", "16:9", "4:3", "拉伸填充 (Fill)", "居中裁剪 (Zoom)"};
-                  new AlertDialog.Builder(this).setTitle("选择画面比例")
-                      .setSingleChoiceItems(ops, resizeModeIndex, (d, w) -> {
-                          resizeModeIndex = w;
-                          if (w == 0) playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIT);
-                          else if (w == 3) playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FILL);
-                          else if (w == 4) playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_ZOOM);
-                          d.dismiss();
-                      }).show();
-              }
-
-              private void loadVodData(String keyword, String typeId) {
-                  swipeVod.setRefreshing(true);
-                  VodRoute route = vodRoutes.get(currentVodRouteIndex);
-                  btnSwitchVodSource.setText(route.name + " ▼");
-
-                  String url = route.api + "?ac=videolist";
-                  if (typeId != null && !typeId.isEmpty()) url += "&t=" + typeId;
-                  else if (keyword != null && !keyword.isEmpty()) url += "&wd=" + keyword;
-                  else url += "&pg=1";
-
-                  httpClient.newCall(new Request.Builder().url(url).build()).enqueue(new Callback() {
-                      @Override public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                          runOnUiThread(() -> { swipeVod.setRefreshing(false); Toast.makeText(MainActivity.this, "连接超时，请切换线路", Toast.LENGTH_SHORT).show(); });
-                      }
-                      @Override public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                          if (response.isSuccessful() && response.body() != null) {
-                              try {
-                                  JSONObject json = new JSONObject(response.body().string());
-                                  JSONArray list = json.optJSONArray("list");
-                                  List<VodItem> parsed = new ArrayList<>();
-                                  if (list != null) {
-                                      for (int i = 0; i < list.length(); i++) {
-                                          JSONObject it = list.getJSONObject(i);
-                                          VodItem v = new VodItem();
-                                          v.id = it.optString("vod_id");
-                                          v.name = it.optString("vod_name");
-                                          v.pic = it.optString("vod_pic");
-                                          v.remarks = it.optString("vod_remarks");
-                                          double sc = 7.0 + (Math.abs(v.name.hashCode()) % 26) / 10.0;
-                                          v.score = "评分: " + String.format(Locale.getDefault(), "%.1f", sc);
-                                          v.playFrom = it.optString("vod_play_from");
-                                          v.playUrl = it.optString("vod_play_url");
-                                          parseVodGroups(v);
-                                          parsed.add(v);
-                                      }
-                                  }
-                                  runOnUiThread(() -> {
-                                      vodList.clear();
-                                      vodList.addAll(parsed);
-                                      vodAdapter.notifyDataSetChanged();
-                                      swipeVod.setRefreshing(false);
-                                  });
-                              } catch (Exception e) { runOnUiThread(() -> swipeVod.setRefreshing(false)); }
-                          }
-                      }
-                  });
-              }
-
-              private void parseVodGroups(VodItem v) {
-                  v.playGroups.clear();
-                  if (v.playUrl == null || v.playUrl.trim().isEmpty()) return;
-                  String[] fromArr = (v.playFrom != null && !v.playFrom.isEmpty()) ? v.playFrom.split("\\$\\$\\$") : new String[0];
-                  String[] urlGroupArr = v.playUrl.split("\\$\\$\\$");
-
-                  for (int g = 0; g < urlGroupArr.length; g++) {
-                      PlayGroup grp = new PlayGroup();
-                      grp.fromName = (g < fromArr.length) ? fromArr[g].trim().toUpperCase() : ("线路 " + (g + 1));
-                      String[] eps = urlGroupArr[g].split("#|\\r?\\n");
-                      for (String epStr : eps) {
-                          epStr = epStr.trim();
-                          if (epStr.isEmpty()) continue;
-                          if (epStr.contains("$")) {
-                              String[] p = epStr.split("\\$");
-                              if (p.length > 1 && p[1].trim().startsWith("http")) grp.episodes.add(new Episode(p[0].trim(), p[1].trim()));
-                          } else if (epStr.startsWith("http")) {
-                              grp.episodes.add(new Episode("第 " + (grp.episodes.size() + 1) + " 集", epStr));
-                          }
-                      }
-                      if (!grp.episodes.isEmpty()) v.playGroups.add(grp);
-                  }
-              }
-
-              private void showVodRouteDialog() {
-                  String[] names = new String[vodRoutes.size()];
-                  for (int i = 0; i < vodRoutes.size(); i++) names[i] = vodRoutes.get(i).name;
-                  new AlertDialog.Builder(this).setTitle("切换 TVBox 线路仓")
-                      .setSingleChoiceItems(names, currentVodRouteIndex, (d, w) -> {
-                          currentVodRouteIndex = w;
-                          loadVodData("", "");
-                          d.dismiss();
-                      }).show();
-              }
-
-              private void showEpisodeSheet(VodItem vod) {
-                  BottomSheetDialog sheet = new BottomSheetDialog(this);
-                  View view = LayoutInflater.from(this).inflate(R.layout.dialog_episodes, null);
-                  ((TextView) view.findViewById(R.id.tv_episode_sheet_title)).setText(vod.name + " - 选集");
-
-                  ChipGroup cg = view.findViewById(R.id.chip_group_sources);
-                  RecyclerView rv = view.findViewById(R.id.recycler_episodes);
-                  rv.setLayoutManager(new GridLayoutManager(this, 4));
-
-                  final int[] activeG = {currentGroupIndex < vod.playGroups.size() ? currentGroupIndex : 0};
-                  Runnable updateList = () -> {
-                      PlayGroup group = vod.playGroups.get(activeG[0]);
-                      rv.setAdapter(new RecyclerView.Adapter<EpisodeVH>() {
-                          @NonNull @Override public EpisodeVH onCreateViewHolder(@NonNull ViewGroup p, int vt) {
-                              return new EpisodeVH(LayoutInflater.from(p.getContext()).inflate(R.layout.item_episode_btn, p, false));
-                          }
-                          @Override public void onBindViewHolder(@NonNull EpisodeVH h, int pos) {
-                              Episode ep = group.episodes.get(pos);
-                              h.btn.setText(ep.title);
-                              boolean isCur = (vod == currentPlayingVod && activeG[0] == currentGroupIndex && pos == currentEpisodeIndex);
-                              h.btn.setBackgroundTintList(android.content.res.ColorStateList.valueOf(isCur ? 0xFF2979FF : 0xFF21262D));
-                              h.btn.setOnClickListener(v -> {
-                                  sheet.dismiss();
-                                  playVodEpisode(vod, activeG[0], pos);
-                              });
-                          }
-                          @Override public int getItemCount() { return group.episodes.size(); }
-                      });
-                  };
-
-                  cg.removeAllViews();
-                  for (int i = 0; i < vod.playGroups.size(); i++) {
-                      Chip chip = new Chip(this);
-                      chip.setText(vod.playGroups.get(i).fromName);
-                      chip.setCheckable(true);
-                      chip.setChecked(i == activeG[0]);
-                      final int idx = i;
-                      chip.setOnClickListener(v -> { activeG[0] = idx; updateList.run(); });
-                      cg.addView(chip);
-                  }
-                  updateList.run();
-                  sheet.setContentView(view);
-                  sheet.show();
-              }
-
-              private void loadDefaultOrCachedLive() {
-                  allLiveChannels.clear();
-                  allLiveChannels.add(new LiveChannel("CCTV-1 综合", "央视", "http://ottrrs.hl.chinamobile.com/PLTV/88888888/224/3221226016/index.m3u8"));
-                  allLiveChannels.add(new LiveChannel("CCTV-2 财经", "央视", "http://ottrrs.hl.chinamobile.com/PLTV/88888888/224/3221226021/index.m3u8"));
-                  allLiveChannels.add(new LiveChannel("CCTV-5 体育", "央视", "http://ottrrs.hl.chinamobile.com/PLTV/88888888/224/3221226010/index.m3u8"));
-                  allLiveChannels.add(new LiveChannel("CCTV-13 新闻", "央视", "http://ottrrs.hl.chinamobile.com/PLTV/88888888/224/3221225588/index.m3u8"));
-                  allLiveChannels.add(new LiveChannel("湖南卫视", "卫视", "http://ottrrs.hl.chinamobile.com/PLTV/88888888/224/3221225610/index.m3u8"));
-                  allLiveChannels.add(new LiveChannel("浙江卫视", "卫视", "http://ottrrs.hl.chinamobile.com/PLTV/88888888/224/3221225726/index.m3u8"));
-                  allLiveChannels.add(new LiveChannel("东方卫视", "卫视", "http://ottrrs.hl.chinamobile.com/PLTV/88888888/224/3221226409/index.m3u8"));
-                  displayLiveChannels.clear();
-                  displayLiveChannels.addAll(allLiveChannels);
-                  liveAdapter.notifyDataSetChanged();
-              }
-
-              private void showLiveSourceDialog() {
-                  String[] items = new String[]{"国内 IPv4 优质源 (全网秒开)", "全国 IPv6 高清专线 (需网络支持)", "恢复默认源"};
-                  new AlertDialog.Builder(this).setTitle("更新电视直播源")
-                      .setItems(items, (d, w) -> {
-                          if (w == 0) fetchLiveM3u(URL_IPV4_LIVE);
-                          else if (w == 1) fetchLiveM3u(URL_IPV6_LIVE);
-                          else loadDefaultOrCachedLive();
-                      }).show();
-              }
-
-              private void fetchLiveM3u(String url) {
-                  Toast.makeText(this, "正在更新直播线路...", Toast.LENGTH_SHORT).show();
-                  httpClient.newCall(new Request.Builder().url(url).build()).enqueue(new Callback() {
-                      @Override public void onFailure(@NonNull Call call, @NonNull IOException e) {}
-                      @Override public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                          if (response.isSuccessful() && response.body() != null) {
-                              String content = response.body().string();
-                              runOnUiThread(() -> {
-                                  parseLiveM3u(content);
-                                  Toast.makeText(MainActivity.this, "直播源已更新，共 " + allLiveChannels.size() + " 个频道", Toast.LENGTH_SHORT).show();
-                              });
-                          }
-                      }
-                  });
-              }
-
-              private void parseLiveM3u(String content) {
-                  allLiveChannels.clear();
-                  String[] lines = content.split("\\r?\\n");
-                  String curName = "";
-                  String curGroup = "其他";
-                  for (String line : lines) {
-                      line = line.trim();
-                      if (line.startsWith("#EXTINF:")) {
-                          int comma = line.lastIndexOf(",");
-                          if (comma != -1) curName = line.substring(comma + 1).trim();
-                          if (line.contains("group-title=\"")) {
-                              int s = line.indexOf("group-title=\"") + 13;
-                              int e = line.indexOf("\"", s);
-                              if (e != -1) curGroup = line.substring(s, e);
-                          }
-                      } else if (line.startsWith("http://") || line.startsWith("https://")) {
-                          if (!curName.isEmpty()) {
-                              allLiveChannels.add(new LiveChannel(curName, curGroup, line));
-                              curName = "";
-                          }
-                      }
-                  }
-                  displayLiveChannels.clear();
-                  displayLiveChannels.addAll(allLiveChannels);
-                  liveAdapter.notifyDataSetChanged();
-              }
-
-              private void filterLiveCategory(String cat) {
-                  displayLiveChannels.clear();
-                  if ("全部".equals(cat)) displayLiveChannels.addAll(allLiveChannels);
-                  else {
-                      for (LiveChannel c : allLiveChannels) if (c.group.contains(cat) || c.name.contains(cat)) displayLiveChannels.add(c);
-                  }
-                  liveAdapter.notifyDataSetChanged();
-              }
-
-              @Override
-              protected void onDestroy() {
-                  super.onDestroy();
-                  uiHandler.removeCallbacksAndMessages(null);
-                  if (player != null) player.release();
-              }
-
-              // 首页海报流适配器：点击打开专属详情页
-              private class VodAdapter extends RecyclerView.Adapter<VodVH> {
-                  @NonNull @Override public VodVH onCreateViewHolder(@NonNull ViewGroup p, int vt) {
-                      return new VodVH(LayoutInflater.from(p.getContext()).inflate(R.layout.item_vod_card, p, false));
-                  }
-                  @Override public void onBindViewHolder(@NonNull VodVH h, int pos) {
-                      VodItem item = vodList.get(pos);
-                      h.tvTitle.setText(item.name);
-                      h.tvScore.setText(item.score);
-                      Glide.with(MainActivity.this).load(item.pic).placeholder(R.drawable.bg_poster_placeholder).into(h.ivPoster);
-                      h.itemView.setOnClickListener(v -> showVodDetail(item));
-                  }
-                  @Override public int getItemCount() { return vodList.size(); }
-              }
-
-              static class VodVH extends RecyclerView.ViewHolder {
-                  ImageView ivPoster;
-                  TextView tvScore, tvTitle;
-                  public VodVH(@NonNull View itemView) {
-                      super(itemView);
-                      ivPoster = itemView.findViewById(R.id.iv_vod_poster);
-                      tvScore = itemView.findViewById(R.id.tv_vod_score);
-                      tvTitle = itemView.findViewById(R.id.tv_vod_title);
-                  }
-              }
-
-              static class EpisodeVH extends RecyclerView.ViewHolder {
-                  Button btn;
-                  public EpisodeVH(@NonNull View itemView) {
-                      super(itemView);
-                      btn = itemView.findViewById(R.id.btn_episode_item);
-                  }
-              }
-
-              private class SuggestionAdapter extends RecyclerView.Adapter<SuggestionAdapter.VH> {
-                  @NonNull @Override public VH onCreateViewHolder(@NonNull ViewGroup p, int vt) {
-                      return new VH(LayoutInflater.from(p.getContext()).inflate(R.layout.item_search_suggestion, p, false));
-                  }
-                  @Override public void onBindViewHolder(@NonNull VH h, int pos) {
-                      String t = currentSuggestions.get(pos);
-                      h.tv.setText(t);
-                      h.itemView.setOnClickListener(v -> executeSearch(t.replace("全网搜索: ", "").trim()));
-                  }
-                  @Override public int getItemCount() { return currentSuggestions.size(); }
-                  class VH extends RecyclerView.ViewHolder {
-                      TextView tv;
-                      public VH(View v) { super(v); tv = v.findViewById(R.id.tv_suggestion_text); }
-                  }
-              }
-
-              private class LiveAdapter extends RecyclerView.Adapter<LiveVH> {
-                  @NonNull @Override public LiveVH onCreateViewHolder(@NonNull ViewGroup p, int vt) {
-                      return new LiveVH(LayoutInflater.from(p.getContext()).inflate(R.layout.item_live_channel, p, false));
-                  }
-                  @Override public void onBindViewHolder(@NonNull LiveVH h, int position) {
-                      LiveChannel ch = displayLiveChannels.get(position);
-                      h.tvNum.setText(String.format(Locale.getDefault(), "%02d", position + 1));
-                      h.tvName.setText(ch.name);
-                      h.tvGroup.setText(ch.group);
-                      if (position == currentPlayingLiveIndex) {
-                          h.tvIndicator.setVisibility(View.VISIBLE);
-                          h.tvName.setTextColor(0xFF2979FF);
-                      } else {
-                          h.tvIndicator.setVisibility(View.GONE);
-                          h.tvName.setTextColor(0xFF212121);
-                      }
-                      h.itemView.setOnClickListener(v -> {
-                          currentPlayingLiveIndex = position;
-                          notifyDataSetChanged();
-                          MainActivity.this.playLiveStream(ch.name, ch.url);
-                      });
-                  }
-                  @Override public int getItemCount() { return displayLiveChannels.size(); }
-              }
-
-              static class LiveVH extends RecyclerView.ViewHolder {
-                  TextView tvNum, tvName, tvGroup, tvIndicator;
-                  public LiveVH(@NonNull View itemView) {
-                      super(itemView);
-                      tvNum = itemView.findViewById(R.id.tv_live_num);
-                      tvName = itemView.findViewById(R.id.tv_live_name);
-                      tvGroup = itemView.findViewById(R.id.tv_live_group);
-                      tvIndicator = itemView.findViewById(R.id.tv_live_indicator);
-                  }
-              }
-          }
-          EOF
-
-      # 步骤 3：编译打包 Debug APK
-      - name: Build Debug APK
-        run: gradle assembleDebug --no-daemon
-
-      # 步骤 4：自动发布 Release
-      - name: Automatically Create Release & Publish APK
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RUN_NUM: ${{ github.run_number }}
-        run: |
-          TAG_NAME="v2.${RUN_NUM}"
-          APK_PATH="app/build/outputs/apk/debug/app-debug.apk"
-          
-          gh release create "$TAG_NAME" "$APK_PATH" \
-            --title "影视盒子 V2.${RUN_NUM}" \
-            --notes "界面与功能全面升级：播放器全屏布局重构、详情页选集介绍、双重滑动手势优化、锁屏全要素状态显示以及底部标签栏彻底解耦。"
-
-      # 步骤 5：自动更新 version.json 与 release.keystore 并提交回仓库
-      - name: Auto-update version.json & keystore in Repository
-        env:
-          RUN_NUM: ${{ github.run_number }}
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          
-          DOWNLOAD_URL="https://gh-proxy.org/https://github.com/${{ github.repository }}/releases/download/v2.${RUN_NUM}/app-debug.apk"
-          V_CODE=$((1000 + RUN_NUM))
-
-          cat << EOF > version.json
-          {
-            "versionCode": $V_CODE,
-            "versionName": "2.${RUN_NUM}",
-            "apkUrl": "$DOWNLOAD_URL",
-            "changelog": "1. 参照截图全新重构影片详情页（点击不再直接播放，支持线路切换、选集网格与简介）\n2. 底部菜单彻底解耦，电视与我的页面绝不串屏带入播放器\n3. 屏幕锁定状态常驻显示播放进度、系统时间与电量\n4. 优化快进快退拖拽与右侧垂直亮度手势"
-          }
-          EOF
-
-          git add version.json app/release.keystore
-          git commit -m "Auto update version.json & release.keystore to v2.${RUN_NUM} [skip ci]" || true
-          git push origin HEAD || true
+                          Toast
