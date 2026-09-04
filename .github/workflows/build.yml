@@ -31,7 +31,7 @@ jobs:
         with:
           gradle-version: '8.4'
 
-      # 步骤 1：生成工程配置、资源文件与布局（不含大段代码，支持变量注入）
+      # 步骤 1：生成工程配置、资源文件与布局
       - name: Setup Android Project Configuration
         env:
           RUN_NUM: ${{ github.run_number }}
@@ -75,7 +75,6 @@ jobs:
           }
           EOF
 
-          # 动态注入自增版本号（使用 Shell 变量，不触发 Actions 长度限制）
           cat << EOF > app/build.gradle
           plugins {
               id 'com.android.application'
@@ -532,9 +531,16 @@ jobs:
           </LinearLayout>
           EOF
 
+          # 关键修复：在 dialog_episodes.xml 根节点补齐 xmlns:app 声明
           cat << 'EOF' > app/src/main/res/layout/dialog_episodes.xml
           <?xml version="1.0" encoding="utf-8"?>
-          <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:background="#161B22" android:padding="16dp">
+          <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="vertical"
+              android:background="#161B22"
+              android:padding="16dp">
               <TextView android:id="@+id/tv_episode_sheet_title" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/white" android:textSize="16sp" android:textStyle="bold" android:text="选择播放集数"/>
               <HorizontalScrollView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:scrollbars="none">
                   <com.google.android.material.chip.ChipGroup android:id="@+id/chip_group_sources" android:layout_width="wrap_content" android:layout_height="wrap_content" app:singleSelection="true"/>
@@ -586,7 +592,7 @@ jobs:
           </manifest>
           EOF
 
-      # 步骤 2：生成主 Java 业务代码（纯文本写入，完全不含 Actions 变量，解除长度限制）
+      # 步骤 2：生成主 Java 业务代码
       - name: Generate Java Source Code
         run: |
           cat << 'EOF' > app/src/main/java/com/mobile/tvbox/MainActivity.java
@@ -2354,7 +2360,7 @@ jobs:
             --title "影视盒子 V2.${RUN_NUM}" \
             --notes "代码提交自动构建版本 V2.${RUN_NUM}，已同步至云端更新源。"
 
-      # 步骤 5：自动更新 version.json 并提交回仓库（数值计算规范化）
+      # 步骤 5：自动更新 version.json 并提交回仓库
       - name: Auto-update version.json in Repository
         env:
           RUN_NUM: ${{ github.run_number }}
