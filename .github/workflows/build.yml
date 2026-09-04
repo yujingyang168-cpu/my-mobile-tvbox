@@ -32,7 +32,7 @@ jobs:
         with:
           gradle-version: '8.4'
 
-      # 步骤 1：生成配置、密钥与界面布局文件
+      # 步骤 1：生成工程配置、永久密钥与资源布局
       - name: Setup Android Project Configuration
         env:
           RUN_NUM: ${{ github.run_number }}
@@ -44,6 +44,7 @@ jobs:
           mkdir -p app/src/main/res/menu
           mkdir -p app/src/main/res/xml
 
+          # 永久专属签名密钥检测与生成
           if [ ! -f app/release.keystore ]; then
             keytool -genkeypair -v -keystore app/release.keystore \
               -alias tvbox \
@@ -487,6 +488,7 @@ jobs:
                   </RelativeLayout>
               </FrameLayout>
 
+              <!-- 主内容容器与浮动搜索联想层 -->
               <FrameLayout
                   android:id="@+id/content_container"
                   android:layout_width="match_parent"
@@ -527,6 +529,7 @@ jobs:
                       </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
                   </LinearLayout>
 
+                  <!-- 搜索实时联想下拉悬浮面板 -->
                   <LinearLayout
                       android:id="@+id/layout_search_suggestions"
                       android:layout_width="match_parent"
@@ -710,7 +713,7 @@ jobs:
           </manifest>
           EOF
 
-      # 步骤 2：生成主 Java 业务代码
+      # 步骤 2：生成主 Java 业务代码（补齐所有实现方法与类内结构）
       - name: Generate Java Source Code
         run: |
           cat << 'EOF' > app/src/main/java/com/mobile/tvbox/MainActivity.java
@@ -1293,6 +1296,78 @@ jobs:
                   loadVodData(keyword, "");
               }
 
+              // 补齐缓存大小统计与展示实现
+              private void updateCacheDisplay() {
+                  new Thread(() -> {
+                      long size = getDirSize(getCacheDir()) + getDirSize(getExternalCacheDir());
+                      String formatted = formatFileSize(size);
+                      runOnUiThread(() -> {
+                          if (tvCacheSize != null) {
+                              tvCacheSize.setText("当前缓存占用: " + formatted);
+                          }
+                      });
+                  }).start();
+              }
+
+              // 补齐一键清理本地缓存实现
+              private void clearAppCache() {
+                  ProgressDialog pd = new ProgressDialog(this);
+                  pd.setMessage("正在深度清理本地媒体与海报缓存...");
+                  pd.show();
+
+                  new Thread(() -> {
+                      deleteDir(getCacheDir());
+                      deleteDir(getExternalCacheDir());
+                      runOnUiThread(() -> Glide.get(MainActivity.this).clearMemory());
+                      Glide.get(MainActivity.this).clearDiskCache();
+
+                      runOnUiThread(() -> {
+                          pd.dismiss();
+                          updateCacheDisplay();
+                          Toast.makeText(MainActivity.this, "缓存清理成功！", Toast.LENGTH_SHORT).show();
+                      });
+                  }).start();
+              }
+
+              private long getDirSize(File dir) {
+                  long size = 0;
+                  if (dir != null && dir.isDirectory()) {
+                      File[] files = dir.listFiles();
+                      if (files != null) {
+                          for (File f : files) {
+                              if (f.isDirectory()) size += getDirSize(f);
+                              else size += f.length();
+                          }
+                      }
+                  } else if (dir != null && dir.isFile()) {
+                      size += dir.length();
+                  }
+                  return size;
+              }
+
+              private boolean deleteDir(File dir) {
+                  if (dir != null && dir.isDirectory()) {
+                      String[] children = dir.list();
+                      if (children != null) {
+                          for (String child : children) {
+                              boolean success = deleteDir(new File(dir, child));
+                              if (!success) return false;
+                          }
+                      }
+                      return dir.delete();
+                  } else if (dir != null && dir.isFile()) {
+                      return dir.delete();
+                  }
+                  return false;
+              }
+
+              private String formatFileSize(long bytes) {
+                  if (bytes <= 0) return "0.00 MB";
+                  double mb = bytes / (1024.0 * 1024.0);
+                  if (mb < 0.1) return String.format(Locale.getDefault(), "%.2f KB", bytes / 1024.0);
+                  return String.format(Locale.getDefault(), "%.2f MB", mb);
+              }
+
               private class SuggestionAdapter extends RecyclerView.Adapter<SuggestionAdapter.VH> {
                   @NonNull
                   @Override
@@ -1365,7 +1440,7 @@ jobs:
                       @Override
                       public void onPlayerError(@NonNull PlaybackException error) {
                           bufferingProgress.setVisibility(View.GONE);
-                          Toast.makeText(MainActivity.this, "播放失败(" + error.getErrorCodeName() + ")，请尝试换线", Toast.LENGTH_SHORT).show();
+                          Toast.makeText(MainActivity.this, "播放失败(" + error.getErrorCodeName() + ")，请换线或选集", Toast.LENGTH_SHORT).show();
                       }
                   });
               }
