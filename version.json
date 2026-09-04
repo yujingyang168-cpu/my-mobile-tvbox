@@ -1,6 +1,6 @@
 {
-  "versionCode": 1013,
-  "versionName": "2.13",
-  "apkUrl": "https://gh-proxy.org/https://github.com/yujingyang168-cpu/my-mobile-tvbox/releases/download/v2.13/app-debug.apk",
-  "changelog": "1. 彻底修复分类筛选，采用官方真实TypeID分类检索\n2. 新增搜索联想下拉悬浮面板与实时推荐\n3. 优化锁屏状态：锁屏隐藏微进度条\n4. 清晰度与画面比例全面升级为弹出式单选菜单"
+  "versionCode": 1016,
+  "versionName": "2.16",
+  "apkUrl": "https://gh-proxy.org/https://github.com/yujingyang168-cpu/my-mobile-tvbox/releases/download/v2.16/app-debug.apk",
+  "changelog": "1. 播放界面重构（分辨率角标/锁屏/旋转/控制栏）\n2. 新增播放设置二级菜单抽屉（比例/片头片尾/内核/收藏/投屏）\n3. 首页设计重构（4行筛选矩阵+3列带评分海报流）\n4. 个人中心重构（浅蓝天空顶栏+收藏/历史/投屏卡片）\n5. 新增观看历史、收藏与屏幕旋转控制"
 }
