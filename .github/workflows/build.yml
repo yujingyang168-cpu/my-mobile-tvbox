@@ -189,7 +189,6 @@ jobs:
           </resources>
           EOF
 
-          # 图标与图形资源（补全 bg_poster_placeholder）
           cat << 'EOF' > app/src/main/res/drawable/ic_app_icon.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="108dp"
@@ -539,7 +538,6 @@ jobs:
                       android:text="🔓"
                       android:visibility="gone"/>
 
-                  <!-- 播放器右侧三按键栏 -->
                   <LinearLayout
                       android:id="@+id/right_player_actions"
                       android:layout_width="wrap_content"
@@ -582,7 +580,6 @@ jobs:
                           android:background="@drawable/bg_player_glass_btn"/>
                   </LinearLayout>
 
-                  <!-- 播放控制层 -->
                   <RelativeLayout
                       android:id="@+id/player_control_overlay"
                       android:layout_width="match_parent"
@@ -750,7 +747,6 @@ jobs:
                       </LinearLayout>
                   </RelativeLayout>
 
-                  <!-- 播放器二级菜单抽屉 -->
                   <ScrollView
                       android:id="@+id/player_settings_drawer"
                       android:layout_width="320dp"
@@ -1126,7 +1122,7 @@ jobs:
           </manifest>
           EOF
 
-      # 步骤 2：生成主 Java 业务代码（已剔除旧 ID 并在 View 中完整绑定）
+      # 步骤 2：生成 Java 源代码（已彻底补齐 playLiveStream 与 position 变量）
       - name: Generate Java Source Code
         run: |
           cat << 'EOF' > app/src/main/java/com/mobile/tvbox/MainActivity.java
@@ -1333,7 +1329,7 @@ jobs:
                   initFilterMatrix();
                   initSearchWatcher();
 
-                  loadVodData("", "1"); // 默认展示热门电影
+                  loadVodData("", "1");
                   loadDefaultOrCachedLive();
 
                   startPeriodicUiUpdates();
@@ -1425,12 +1421,10 @@ jobs:
                   tvCacheSize = findViewById(R.id.tv_cache_size);
                   tvAppVersionInfo = findViewById(R.id.tv_app_version_info);
 
-                  // 3 列影视海报流
                   recyclerVod.setLayoutManager(new GridLayoutManager(this, 3));
                   vodAdapter = new VodAdapter();
                   recyclerVod.setAdapter(vodAdapter);
 
-                  // 底部导航栏切换
                   bottomNav.setOnItemSelectedListener(item -> {
                       int id = item.getItemId();
                       layoutVod.setVisibility(id == R.id.nav_vod ? View.VISIBLE : View.GONE);
@@ -1440,10 +1434,8 @@ jobs:
                       return true;
                   });
 
-                  // 首页历史入口
                   findViewById(R.id.btn_home_history).setOnClickListener(v -> showHistoryDialog());
 
-                  // “我的”页面功能绑定
                   findViewById(R.id.btn_mine_favorites).setOnClickListener(v -> showFavoritesDialog());
                   findViewById(R.id.btn_mine_history).setOnClickListener(v -> showHistoryDialog());
                   findViewById(R.id.btn_mine_cast).setOnClickListener(v -> showCastScreenDialog());
@@ -1475,10 +1467,10 @@ jobs:
                       final int idx = i;
                       chip.setOnClickListener(v -> {
                           if (idx == 0) loadVodData("热播", "");
-                          else if (idx == 1) loadVodData("", "1"); // 电影
-                          else if (idx == 2) loadVodData("", "2"); // 连续剧
-                          else if (idx == 3) loadVodData("", "3"); // 综艺
-                          else loadVodData("", "4"); // 动漫
+                          else if (idx == 1) loadVodData("", "1");
+                          else if (idx == 2) loadVodData("", "2");
+                          else if (idx == 3) loadVodData("", "3");
+                          else loadVodData("", "4");
                       });
                       chipGroupMainTypes.addView(chip);
                   }
@@ -1683,7 +1675,6 @@ jobs:
                       toggleFullscreen();
                   });
 
-                  // 修复：仅绑定存在的右侧设置齿轮 ID
                   findViewById(R.id.btn_action_settings).setOnClickListener(v -> {
                       playerControlOverlay.setVisibility(View.GONE);
                       rightPlayerActions.setVisibility(View.GONE);
@@ -1837,11 +1828,32 @@ jobs:
                   isLivePlaying = false;
                   hasPendingSkipIntro = true;
 
+                  btnPrevEp.setVisibility(View.VISIBLE);
+                  btnNextEp.setVisibility(View.VISIBLE);
+                  btnSpeedSwitch.setVisibility(View.VISIBLE);
+                  btnEpisodesSheet.setVisibility(View.VISIBLE);
+                  playerSeekBar.setVisibility(View.VISIBLE);
+
                   PlayGroup group = item.playGroups.get(groupIdx);
                   Episode ep = group.episodes.get(epIdx);
 
+                  tvPlayerResolution.setText("[ 1920 X 1080 ]");
                   saveWatchHistory(item, ep.title);
                   playMedia(item.name + " " + ep.title, ep.url);
+              }
+
+              // 补齐供外部与 Adapter 调用的直播播放方法
+              public void playLiveStream(String name, String url) {
+                  isLivePlaying = true;
+                  currentPlayingVod = null;
+                  tvPlayerResolution.setText("[ 电视直播专线 ]");
+                  btnPrevEp.setVisibility(View.GONE);
+                  btnNextEp.setVisibility(View.GONE);
+                  btnSpeedSwitch.setVisibility(View.GONE);
+                  btnEpisodesSheet.setVisibility(View.GONE);
+                  playerSeekBar.setVisibility(View.INVISIBLE);
+                  tvCombinedTime.setText("🔴 实时直播");
+                  playMedia(name, url);
               }
 
               private void playMedia(String title, String url) {
@@ -2433,6 +2445,7 @@ jobs:
                   if (player != null) player.release();
               }
 
+              // 适配器
               private class VodAdapter extends RecyclerView.Adapter<VodVH> {
                   @NonNull @Override public VodVH onCreateViewHolder(@NonNull ViewGroup p, int vt) {
                       return new VodVH(LayoutInflater.from(p.getContext()).inflate(R.layout.item_vod_card, p, false));
@@ -2482,13 +2495,14 @@ jobs:
                   }
               }
 
+              // 关键修复：统一 position 参数命名，并显式通过外部类调用 playLiveStream
               private class LiveAdapter extends RecyclerView.Adapter<LiveVH> {
                   @NonNull @Override public LiveVH onCreateViewHolder(@NonNull ViewGroup p, int vt) {
                       return new LiveVH(LayoutInflater.from(p.getContext()).inflate(R.layout.item_live_channel, p, false));
                   }
-                  @Override public void onBindViewHolder(@NonNull LiveVH h, int pos) {
-                      LiveChannel ch = displayLiveChannels.get(pos);
-                      h.tvNum.setText(String.format("%02d", pos + 1));
+                  @Override public void onBindViewHolder(@NonNull LiveVH h, int position) {
+                      LiveChannel ch = displayLiveChannels.get(position);
+                      h.tvNum.setText(String.format(Locale.getDefault(), "%02d", position + 1));
                       h.tvName.setText(ch.name);
                       h.tvGroup.setText(ch.group);
                       if (position == currentPlayingLiveIndex) {
@@ -2499,9 +2513,9 @@ jobs:
                           h.tvName.setTextColor(0xFF212121);
                       }
                       h.itemView.setOnClickListener(v -> {
-                          currentPlayingLiveIndex = pos;
+                          currentPlayingLiveIndex = position;
                           notifyDataSetChanged();
-                          playLiveStream(ch.name, ch.url);
+                          MainActivity.this.playLiveStream(ch.name, ch.url);
                       });
                   }
                   @Override public int getItemCount() { return displayLiveChannels.size(); }
