@@ -1,6 +1,6 @@
 {
-  "versionCode": 1016,
-  "versionName": "2.16",
-  "apkUrl": "https://gh-proxy.org/https://github.com/yujingyang168-cpu/my-mobile-tvbox/releases/download/v2.16/app-debug.apk",
-  "changelog": "1. 播放界面重构（分辨率角标/锁屏/旋转/控制栏）\n2. 新增播放设置二级菜单抽屉（比例/片头片尾/内核/收藏/投屏）\n3. 首页设计重构（4行筛选矩阵+3列带评分海报流）\n4. 个人中心重构（浅蓝天空顶栏+收藏/历史/投屏卡片）\n5. 新增观看历史、收藏与屏幕旋转控制"
+  "versionCode": 1017,
+  "versionName": "2.17",
+  "apkUrl": "https://gh-proxy.org/https://github.com/yujingyang168-cpu/my-mobile-tvbox/releases/download/v2.17/app-debug.apk",
+  "changelog": "1. 参照截图全新重构影片详情页（点击不再直接播放，支持线路切换、选集网格与简介）\n2. 底部菜单彻底解耦，电视与我的页面绝不串屏带入播放器\n3. 屏幕锁定状态常驻显示播放进度、系统时间与电量\n4. 优化快进快退拖拽与右侧垂直亮度手势"
 }
