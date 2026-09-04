@@ -6,6 +6,7 @@ on:
     paths-ignore:
       - 'version.json'
       - 'README.md'
+      - 'app/release.keystore'
   workflow_dispatch:
 
 permissions:
@@ -31,7 +32,7 @@ jobs:
         with:
           gradle-version: '8.4'
 
-      # 步骤 1：生成工程配置、资源文件与布局
+      # 步骤 1：生成工程配置、永久签名密钥与资源文件
       - name: Setup Android Project Configuration
         env:
           RUN_NUM: ${{ github.run_number }}
@@ -42,6 +43,19 @@ jobs:
           mkdir -p app/src/main/res/layout
           mkdir -p app/src/main/res/menu
           mkdir -p app/src/main/res/xml
+
+          # 关键修复：检查仓库中是否已有永久密钥，若无则生成一个固定密钥供永久复用
+          if [ ! -f app/release.keystore ]; then
+            echo "正在初始化永久专属签名密钥..."
+            keytool -genkeypair -v -keystore app/release.keystore \
+              -alias tvbox \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 36500 \
+              -storepass tvbox123456 \
+              -keypass tvbox123456 \
+              -dname "CN=MobileTVBox, OU=App, O=TVBox, L=City, ST=Province, C=CN"
+          fi
 
           cat << 'EOF' > gradle.properties
           android.useAndroidX=true
@@ -75,6 +89,7 @@ jobs:
           }
           EOF
 
+          # 配置打包始终使用永久 release.keystore 签名
           cat << EOF > app/build.gradle
           plugins {
               id 'com.android.application'
@@ -92,9 +107,22 @@ jobs:
                   versionName "2.${RUN_NUM}"
               }
 
+              signingConfigs {
+                  release {
+                      storeFile file('release.keystore')
+                      storePassword 'tvbox123456'
+                      keyAlias 'tvbox'
+                      keyPassword 'tvbox123456'
+                  }
+              }
+
               buildTypes {
+                  debug {
+                      signingConfig signingConfigs.release
+                  }
                   release {
                       minifyEnabled false
+                      signingConfig signingConfigs.release
                   }
               }
 
@@ -531,7 +559,6 @@ jobs:
           </LinearLayout>
           EOF
 
-          # 关键修复：在 dialog_episodes.xml 根节点补齐 xmlns:app 声明
           cat << 'EOF' > app/src/main/res/layout/dialog_episodes.xml
           <?xml version="1.0" encoding="utf-8"?>
           <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -2360,8 +2387,8 @@ jobs:
             --title "影视盒子 V2.${RUN_NUM}" \
             --notes "代码提交自动构建版本 V2.${RUN_NUM}，已同步至云端更新源。"
 
-      # 步骤 5：自动更新 version.json 并提交回仓库
-      - name: Auto-update version.json in Repository
+      # 步骤 5：自动更新 version.json 与 release.keystore 并提交回仓库
+      - name: Auto-update version.json & keystore in Repository
         env:
           RUN_NUM: ${{ github.run_number }}
         run: |
@@ -2380,6 +2407,7 @@ jobs:
           }
           EOF
 
-          git add version.json
-          git commit -m "Auto update version.json to v2.${RUN_NUM} [skip ci]" || true
+          # 将自动生成的永久密钥与版本信息一同提交入库
+          git add version.json app/release.keystore
+          git commit -m "Auto update version.json & release.keystore to v2.${RUN_NUM} [skip ci]" || true
           git push origin HEAD || true
