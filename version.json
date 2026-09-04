@@ -1,6 +1,6 @@
 {
-  "versionCode": 1010,
-  "versionName": "2.10",
-  "apkUrl": "https://gh-proxy.org/https://github.com/yujingyang168-cpu/my-mobile-tvbox/releases/download/v2.10/app-debug.apk",
-  "changelog": "1. 影视双层多维分类体系（动作/喜剧/恐怖等题材联动）\n2. 搜索输入实时联想与建议词\n3. 新增一键深度本地缓存清理"
+  "versionCode": 1013,
+  "versionName": "2.13",
+  "apkUrl": "https://gh-proxy.org/https://github.com/yujingyang168-cpu/my-mobile-tvbox/releases/download/v2.13/app-debug.apk",
+  "changelog": "1. 彻底修复分类筛选，采用官方真实TypeID分类检索\n2. 新增搜索联想下拉悬浮面板与实时推荐\n3. 优化锁屏状态：锁屏隐藏微进度条\n4. 清晰度与画面比例全面升级为弹出式单选菜单"
 }
